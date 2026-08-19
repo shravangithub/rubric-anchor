@@ -1,14 +1,14 @@
 # TalentRubric Rank
 
-**Absolute, evidence-anchored resume scoring across 50 parameters.**
+**Absolute, evidence-anchored resume scoring. 133 parameters, ~72 active per role.**
 
 A candidate's score is a property of *that candidate* — not of the batch they
 arrived in, the order the files were uploaded, or the day you ran it.
 
 ```bash
 pip install -e .
-python -m rubric params                                    # the 50 parameters
-python -m rubric score --job examples/job.json --cvs examples/resumes
+python -m rubric params --industry fintech                 # the active parameter set
+python -m rubric score --job examples/job.json --cvs examples/resumes --industry fintech
 python -m rubric audit --rankings examples/rankings.json --shortlist 4
 ```
 
@@ -88,9 +88,12 @@ narrows the pool; a human makes the adverse decision.*
 `assert_no_protected_attributes` refuses any payload whose keys name one. A
 compliance control that can be ignored is not a control.
 
-## The 50 parameters
+## The parameters
 
-| Family | Count | Computed in code |
+A requisition scores on **core 50 + education 8 + proof of work 8 + one
+industry pack**. 133 are defined; roughly 72 run on any given role.
+
+| Core family | Count | In code |
 |---|---|---|
 | eligibility | 8 (all gates) | 8 |
 | experience | 8 | 8 |
@@ -99,10 +102,39 @@ compliance control that can be ignored is not a control.
 | domain | 6 | 0 |
 | trajectory | 5 | 0 |
 | integrity | 5 | 5 |
+| **education** | **8** | **3** |
+| **proof of work** | **8** | **1** |
 
-`python -m rubric params --family integrity` prints any family. Weights are
-relative and renormalise to 1.0 over whichever parameters are in play, so you
-can disable ones you cannot evidence without distorting the rest.
+**Industry packs** (`--industry`), one active at a time:
+`services` · `product` · `saas` · `paas` · `ecommerce` · `fintech` · `ai` ·
+`infra` · `cybersec` · `pharma` — 6 to 7 parameters each, covering what
+actually counts as evidence in that context: ledger and reconciliation for
+fintech, GxP and audit-inspection readiness for pharma, evaluation rigour and
+model risk for AI, peak-event readiness for ecommerce.
+
+Weights renormalise to 1.0 over whatever is active, so activating a pack
+rescales cleanly instead of quietly shrinking the core. Full table in
+[`docs/PARAMETERS.md`](docs/PARAMETERS.md).
+
+### Two rules inside these families worth knowing
+
+**Education is scored, not used to silently reject.** Field of study, academic
+performance, distinctions and project relevance all carry weight. Only
+`required_credential` may auto-reject, and only where practising without the
+qualification is unlawful — medicine, law, chartered accountancy, pharmacy QP.
+`academic_performance` carries a note: weight it for early-career hiring, since
+its predictive validity decays sharply after about three years of work.
+
+**Institution tier is deliberately not a parameter.** College ranking is the
+strongest single proxy for socio-economic background in most markets and adds
+little over field-of-study plus demonstrated work. A test asserts it stays out.
+Add it only with a documented validity study.
+
+**Absence of proof of work is neutral, never a penalty.** Employer IP policy,
+NDAs, caregiving load and unpaid-time inequality all suppress public output
+independently of ability. When these parameters find no evidence they are
+dropped from the composite entirely rather than scored zero — they appear in
+`Result.not_applicable`, and nothing vanishes silently.
 
 ## The knowledge graph
 
@@ -181,8 +213,12 @@ for a new role is permitted in your jurisdiction.
 pip install -e ".[dev]" && pytest -q
 ```
 
-32 tests. They are the specification: if you change a rule, a test should fail
+43 tests. They are the specification: if you change a rule, a test should fail
 and you should have to write down why.
+
+Some of them exist to stop a well-meaning future change: `test_institution_tier_is_not_a_parameter`,
+`test_absence_of_proof_of_work_is_neutral_not_penalised`, and
+`test_education_is_scorable_but_only_credentials_auto_reject`.
 
 ## License
 

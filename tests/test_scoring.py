@@ -40,9 +40,13 @@ def test_score_is_independent_of_other_candidates():
     assert score().composite == alone
 
 
-def test_all_scored_parameters_get_a_value():
+def test_every_scored_parameter_is_either_scored_or_explicitly_suppressed():
+    """Nothing may vanish silently. A parameter is either in the composite or
+    named in `not_applicable` with a reason in the audit record."""
     r = score()
-    assert set(r.scores) == {p.key for p in P.SCORED}
+    accounted = set(r.scores) | set(r.not_applicable)
+    assert {p.key for p in P.SCORED} <= accounted
+    assert not (set(r.scores) & set(r.not_applicable)), "cannot be both"
 
 
 def test_composite_is_bounded():

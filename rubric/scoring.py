@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from datetime import date
 
 from . import parameters as P
+from .packs import NEUTRAL_IF_ABSENT, build_rubric
 from .evidence import Claim, verify, evidence_ratio
 from .guards import assert_no_protected_attributes, assert_single_candidate
 
@@ -25,11 +26,14 @@ class Result:
     needs_human: bool = False
     reasons: list[str] = field(default_factory=list)
     audit: list[dict] = field(default_factory=list)
+    #: Parameters excluded from the composite because absence is not evidence.
+    not_applicable: list[str] = field(default_factory=list)
 
     def as_dict(self) -> dict:
         return {"candidate_id": self.candidate_id, "composite": self.composite,
                 "gates": self.gates, "scores": self.scores,
                 "needs_human": self.needs_human, "reasons": self.reasons,
+                "not_applicable": self.not_applicable,
                 "dropped_claims": [c.as_dict() for c in self.dropped],
                 "audit": self.audit}
 
@@ -46,7 +50,13 @@ def _cap(v: float, lo: float = 0.0, hi: float = 100.0) -> float:
 
 
 def score_candidate(candidate_id: str, resume: str, job: dict,
-                    extractor, today: date | None = None) -> Result:
+                    extractor, today: date | None = None,
+                    industry: str | None = None) -> Result:
+    """Score ONE candidate against the rubric.
+
+    `industry` activates a pack from `rubric.packs`. Absent it, only the
+    role-agnostic core plus education and proof of work are scored.
+    """
     assert_single_candidate(resume)
     assert_no_protected_attributes(job, "the job spec")
     today = today or date.today()
@@ -108,21 +118,38 @@ def score_candidate(candidate_id: str, resume: str, job: dict,
     r.scores.update(code_scores)
 
     # ---- scored: MODEL parameters, each evidence-anchored ----------------
-    model_keys = [p.key for p in P.SCORED
+    active = build_rubric(industry)
+    active_scored = [p for p in active if p.kind is P.Kind.SCORED]
+    model_keys = [p.key for p in active_scored
                   if p.how is P.How.MODEL and p.key not in r.scores]
     mclaims = [extractor.score_parameter(k, resume, job) for k in model_keys]
     mkept, mdropped = verify(mclaims, resume)
     for c in mkept:
         r.scores[c.parameter] = float(c.value)
     for c in mdropped:
-        r.scores[c.parameter] = 0.0        # unevidenced -> contributes nothing
+        if c.parameter in NEUTRAL_IF_ABSENT:
+            # Absence is not evidence. Public repos, patents and academic
+            # distinctions are suppressed by employer IP policy, NDAs,
+            # caregiving load and unpaid-time inequality -- none of which
+            # tell you anything about capability. Drop the parameter from
+            # the composite entirely rather than scoring it zero.
+            r.not_applicable.append(c.parameter)
+        else:
+            r.scores[c.parameter] = 0.0    # unevidenced -> contributes nothing
         r.dropped.append(c)
     r.audit.append({"step": "model_scores", "scored": len(mkept),
-                    "unevidenced": len(mdropped)})
+                    "unevidenced": len(mdropped),
+                    "not_applicable": len(r.not_applicable)})
 
     # ---- composite: arithmetic, in code ---------------------------------
-    w = P.normalised_weights(list(r.scores.keys()))
-    r.composite = round(sum(r.scores[k] * w[k] for k in w), 2)
+    # Weights renormalise over the parameters actually in play, so activating
+    # an industry pack -- or excluding a not-applicable one -- rescales
+    # cleanly instead of quietly shrinking everything else.
+    weights = {p.key: p.weight for p in active_scored if p.key in r.scores}
+    tot = sum(weights.values())
+    r.composite = round(sum(r.scores[k] * (weights[k] / tot) for k in weights), 2)
+    r.audit.append({"step": "composite", "parameters_used": len(weights),
+                    "industry_pack": industry or "none"})
 
     # ---- policy ----------------------------------------------------------
     failed = [k for k, ok in r.gates.items() if not ok]

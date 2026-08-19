@@ -15,7 +15,9 @@ from .audit import analyse, report
 
 
 def _params(args):
-    rows = [p for p in P.ALL if not args.family or p.family == args.family]
+    from .packs import build_rubric, INDUSTRY_PACKS
+    rows = build_rubric(args.industry)
+    rows = [p for p in rows if not args.family or p.family == args.family]
     print(f"{'key':<30}{'family':<13}{'kind':<8}{'how':<7}{'weight':>8}  auto-reject")
     print("-" * 82)
     for p in rows:
@@ -24,6 +26,10 @@ def _params(args):
         print(f"{p.key:<30}{p.family:<13}{p.kind.value:<8}{p.how.value:<7}{w:>8}  {ar}")
     print(f"\n{len(rows)} parameters   "
           f"({sum(1 for p in rows if p.how is P.How.CODE)} computed in code)")
+    if not args.industry:
+        from .packs import INDUSTRY_PACKS
+        print(f"add --industry to include a pack: "
+              f"{', '.join(sorted(INDUSTRY_PACKS))}")
 
 
 def _score(args):
@@ -35,7 +41,8 @@ def _score(args):
     for f in files:
         cid = os.path.splitext(os.path.basename(f))[0]
         r = score_candidate(cid, open(f).read(), job, NullExtractor(),
-                            today=date.fromisoformat(args.today) if args.today else None)
+                            today=date.fromisoformat(args.today) if args.today else None,
+                            industry=args.industry or job.get("industry"))
         out.append(r)
     out.sort(key=lambda r: -r.composite)          # sorting numbers, in code
     print(f"{'candidate':<18}{'score':>8}   status")
@@ -58,7 +65,8 @@ def main(argv=None):
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     a = sub.add_parser("params", help="list the 50 parameters")
-    a.add_argument("--family", choices=P.FAMILIES)
+    a.add_argument("--family")
+    a.add_argument("--industry")
     a.set_defaults(fn=_params)
 
     b = sub.add_parser("score", help="score a folder of CVs")
@@ -66,6 +74,7 @@ def main(argv=None):
     b.add_argument("--cvs", required=True)
     b.add_argument("--json", help="write the full audit record here")
     b.add_argument("--today", help="YYYY-MM-DD, for reproducible date maths")
+    b.add_argument("--industry", help="activate an industry pack")
     b.set_defaults(fn=_score)
 
     c = sub.add_parser("audit", help="shuffle audit on an existing tool")
