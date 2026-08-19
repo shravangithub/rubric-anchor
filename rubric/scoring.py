@@ -30,12 +30,20 @@ class Result:
     audit: list[dict] = field(default_factory=list)
     #: Parameters excluded from the composite because absence is not evidence.
     not_applicable: list[str] = field(default_factory=list)
+    #: Mean score (0-100) across the ROLE pack only. Unlike `composite`, this
+    #: IS comparable between different role packs, because it is a mean rather
+    #: than a weighted sum over a pack-size-dependent denominator. Use it to
+    #: ask "which role does this person fit best"; use `composite` to rank
+    #: candidates WITHIN one requisition.
+    role_fit: float | None = None
+    industry_fit: float | None = None
 
     def as_dict(self) -> dict:
         return {"candidate_id": self.candidate_id, "composite": self.composite,
                 "gates": self.gates, "scores": self.scores,
                 "needs_human": self.needs_human, "reasons": self.reasons,
                 "not_applicable": self.not_applicable,
+                "role_fit": self.role_fit, "industry_fit": self.industry_fit,
                 "dropped_claims": [c.as_dict() for c in self.dropped],
                 "audit": self.audit}
 
@@ -170,6 +178,15 @@ def score_candidate(candidate_id: str, resume: str, job: dict,
     r.audit.append({"step": "composite", "parameters_used": len(weights),
                     "industry_pack": industry or "none",
                     "role_pack": role or "none", "level": level})
+
+    # ---- pack fit: comparable ACROSS packs, unlike the composite ---------
+    def _mean(keys):
+        vals = [r.scores[k] for k in keys if k in r.scores]
+        return round(sum(vals) / len(vals), 2) if vals else None
+    if role:
+        r.role_fit = _mean([p.key for p in ROLE_PACKS[role.lower()]])
+    if industry:
+        r.industry_fit = _mean([p.key for p in INDUSTRY_PACKS[industry.lower()]])
 
     # ---- policy ----------------------------------------------------------
     failed = [k for k, ok in r.gates.items() if not ok]

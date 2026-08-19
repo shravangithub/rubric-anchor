@@ -1,0 +1,13 @@
+Work authorization: Authorized to work in India.
+Notice period: 90 days.
+Education: MBA, 2017. B.Tech, 2013.
+
+Experience
+- Senior Product Manager | Braid SaaS | 2021-02 to present
+  Owned activation and churn as a metric. Framed the onboarding problem from
+  user research with 40 customers. Ran a/b tests and cohort analysis to measure
+  iteration. Prioritised ruthlessly and killed two features deliberately.
+  Drove adoption after launch, cross-functional with design and engineering.
+  Multi-tenant SaaS, worked on self-serve funnel and subscription metrics.
+- Associate PM | Kestrel Apps | 2017-07 to 2021-01
+  Took a new product from nothing to launched.

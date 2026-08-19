@@ -1,0 +1,11 @@
+Work authorization: Authorized to work in India.
+Notice period: 30 days.
+Education: B.Sc Computer Science, 2018.
+
+Experience
+- QA Engineer | Tessel Systems | 2019-03 to present
+  Designed the test strategy for the ingestion platform, not just cases.
+  Built durable automated suites in Playwright, 70% coverage of critical paths.
+  Root-caused defects rather than logging them. Risk-based prioritisation.
+  Performance and load testing under peak. Shift-left, quality moved earlier.
+  Held releases with evidence when the data said so.

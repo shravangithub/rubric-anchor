@@ -1,0 +1,12 @@
+Work authorization: Authorized to work in India.
+Notice period: 30 days.
+Education: B.Tech Electronics, 2015.
+
+Experience
+- Senior SRE | Tessel Systems | 2020-01 to present
+  Defined SLOs and error budgets for 12 services. Ran incident command for
+  Sev-1 events. Built observability with distributed tracing and latency budgets.
+  Reduced toil by automating capacity planning. Chaos testing of failure paths.
+  Wrote blameless postmortems that changed the architecture. Multi-region failover.
+- Systems Engineer | Braid Infra | 2016-04 to 2019-12
+  Kubernetes in production. Terraform infrastructure as code. On-call rotation.

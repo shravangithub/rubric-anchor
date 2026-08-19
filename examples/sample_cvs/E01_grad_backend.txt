@@ -1,0 +1,15 @@
+Work authorization: Authorized to work in India.
+Notice period: immediate.
+Education: B.Tech Computer Science, 2025. CGPA 8.7/10. Thesis on distributed
+consensus, implemented a simplified Raft. Certified: AWS Cloud Practitioner, 2025.
+
+Experience
+- Software Engineer Intern | Corvid Labs | 2024-06 to 2024-12
+  Built a REST api for the internal billing service. Wrote tests for the payment
+  reconciliation path. Learned Go on the job.
+
+Public work
+- github.com/example — 40 substantive commits to an open source rate limiter.
+  Maintainer of a small library with 300 stars. Active in 2026.
+- Wrote 6 technical articles on distributed systems.
+- ICPC regionals, 2024.

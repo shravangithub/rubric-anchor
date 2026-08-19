@@ -1,0 +1,13 @@
+Work authorization: Authorized to work in India.
+Notice period: 90 days.
+Education: M.Tech, 2009.
+
+Experience
+- Director of Engineering | Nimbus Payments | 2019-06 to present
+  Scaled the engineering org from 18 to 95. Designed the org and the technical
+  strategy others executed against. Made delivery predictable at scale.
+  Built the hiring bar and held it. Grew 6 managers, not only engineers.
+  Owned build and run cost. Balanced platform against roadmap.
+  Credible with the board and peers, presented quarterly.
+- Engineering Manager | Corvid Labs | 2014-01 to 2019-05
+  Managed 3 teams. Ran migration at scale without an outage.

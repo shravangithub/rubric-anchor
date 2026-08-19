@@ -211,6 +211,29 @@ Keep the contract: `score_parameter` must return a `Claim` whose `span` is
 copied verbatim from the resume. A paraphrased span fails verification and the
 parameter scores zero — which is the intended behaviour, not a bug.
 
+## Two scores, two jobs
+
+`composite` ranks candidates **within one requisition**. It is a weighted sum,
+so its denominator depends on how many parameters are active — which means
+**composites from different role packs are not comparable**. A test asserts
+this so it stays documented rather than quietly forgotten.
+
+`role_fit` is the mean across the role pack only, so it **is** comparable
+between packs. Use it to ask "which role does this person fit best".
+
+```
+S02_senior_backend_fintech   backend 50.3   (2nd: marketing 6.3)
+S03_sre_senior               sre     47.1   (2nd: backend  22.0)
+S08_ceo_exec                 exec_leadership 46.8
+S10_weak_control             nothing above 0.0
+```
+
+That table is `tests/test_sample_cvs.py`, run against ten sample CVs in
+`examples/sample_cvs/`. It exists because the first version of that test
+returned **0 out of 9** — every CV "fitted" business_development best, because
+the mock extractor had no cues for role parameters and the smallest pack
+therefore won. Both causes are now regression-tested.
+
 ## What this does not do
 
 **It does not make your shortlist better at predicting talent.** It makes it
@@ -245,7 +268,7 @@ for a new role is permitted in your jurisdiction.
 pip install -e ".[dev]" && pytest -q
 ```
 
-57 tests. They are the specification: if you change a rule, a test should fail
+70 tests. They are the specification: if you change a rule, a test should fail
 and you should have to write down why.
 
 Some of them exist to stop a well-meaning future change: `test_institution_tier_is_not_a_parameter`,
