@@ -1,13 +1,14 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Company types, parameters and weights</title>
+<link rel="icon" type="image/png" href="favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-:root{color-scheme:dark;
- --bg:#0E2B22;--card:#143A2E;--ink:#F2F6F1;--soft:#C0D2C6;--faint:#95AD9F;--line:#235C48;--font-head:'Instrument Serif',Georgia,'Times New Roman',serif;--font-body:'Geist',ui-sans-serif,-apple-system,'Segoe UI',Roboto,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
- --b1:#1C4335;--b2:#3A6944;--b3:#7A8C49;--b4:#B79A47;--b5:#D9A441;--code:#79C9A4;--codeBg:#123A2C;--model:#D9A441;--modelBg:#2B2617;--gate:#C9A6D8;--gateBg:#2B2136;--warn:#E8886A;}
+:root{color-scheme:light;
+ --bg:#faf9f7;--card:#ffffff;--ink:#232323;--soft:#575249;--faint:#8a837a;--line:#e3ded4;--font-head:'Instrument Serif',Georgia,'Times New Roman',serif;--font-body:'Geist',ui-sans-serif,-apple-system,'Segoe UI',Roboto,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+ --b1:#f9e6e8;--b2:#eeb6bd;--b3:#df8592;--b4:#d15265;--b5:#c41e30;--code:#1f6f52;--codeBg:#e9f3ef;--model:#c41e30;--modelBg:#fbeaec;--gate:#7a3d76;--gateBg:#f6ecf5;--warn:#c41e30;}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);
  font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
@@ -20,7 +21,7 @@ h2{font-size:1.3rem;margin:44px 0 6px;letter-spacing:-.018em}
 
 /* composition bar */
 .stack{display:flex;height:52px;border-radius:11px;overflow:hidden;margin:16px 0 10px}
-.stack div{display:flex;align-items:center;justify-content:center;color:#0E2B22;
+.stack div{display:flex;align-items:center;justify-content:center;color:#fff;
  font-weight:700;font-size:.82rem;border-right:2px solid var(--card)}
 .stack div:last-child{border:0}
 .slab{display:flex;gap:16px;flex-wrap:wrap;font-size:.83rem;color:var(--soft)}
@@ -70,21 +71,27 @@ summary{cursor:pointer;font-size:.8rem;color:var(--b4);font-weight:600}
 .big p{margin:0;font-size:1.02rem;line-height:1.55}
 .big p+p{margin-top:9px;font-size:.91rem;color:var(--soft)}
 
-/* ---- Oxford theme: typography + surface overrides ---- */
+/* ---- Brand Light: typography + surface overrides ---- */
 body{font-family:var(--font-body);font-feature-settings:"cv05","ss01"}
 h1,h2{font-family:var(--font-head);font-weight:400}
 h1{letter-spacing:-.005em}
 h2{letter-spacing:0}
 .st .v,.dc .dv,.head .hn,.big .bv{font-family:var(--font-head);font-weight:400;letter-spacing:0}
-nav .nm,code,pre,th,.k,.cap,.in label{font-family:var(--font-mono)}
-.btn.p{background:var(--acc);color:#0E2B22;border-color:var(--acc)}
-.btn.p:hover{opacity:.88}
-pre{background:#071E17;color:#DDE8E0;border:1px solid var(--line)}
-.steps li::before{color:#0E2B22}
-::selection{background:var(--acc);color:#0E2B22}
-textarea::placeholder{color:#6E877A}
-a{text-decoration-color:color-mix(in srgb,var(--acc) 55%,transparent)}
+code,pre,th,.k,.cap,.in label{font-family:var(--font-mono)}
+.btn.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.btn.p:hover{opacity:.9}
+pre{background:#2f2f2f;color:#f4f2ef;border:0}
+.steps li::before{color:#fff}
+::selection{background:var(--acc);color:#fff}
+textarea::placeholder{color:#a8a29a}
+a{text-decoration-color:color-mix(in srgb,var(--acc) 45%,transparent)}
+.brandbar{display:flex;align-items:center;gap:14px;text-decoration:none;margin:0 0 30px}
+.brandbar img{height:20px;width:auto;display:block}
+.brandbar span{font-family:ui-monospace,Menlo,monospace;font-size:.74rem;color:var(--faint)}
+.brandbar:hover span{color:var(--ink)}
 </style></head><body><div class="wrap">
+<a class="brandbar" href="index.html"><img src="media/talentrubric-logo-dark.png" alt="TalentRubric"><span>&larr; back to the overview</span></a>
+
 
 <h1>Company types, parameters and weights</h1>
 <p class="lede"><span id="tot"></span> parameters defined. About <b>72 run</b> on any single role.</p>

@@ -1,14 +1,15 @@
 <!DOCTYPE html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>rubric-anchor — measure candidates, don't rank them</title>
+<title>TalentRubric — measure candidates, don't rank them</title>
 <meta name="description" content="Open-source candidate scoring. 247 parameters across 12 company types, 14 roles and 9 levels. A score is a property of the candidate, not the batch.">
+<link rel="icon" type="image/png" href="favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-:root{color-scheme:dark;
- --bg:#0E2B22;--card:#143A2E;--ink:#F2F6F1;--soft:#C0D2C6;--faint:#95AD9F;--line:#235C48;--font-head:'Instrument Serif',Georgia,'Times New Roman',serif;--font-body:'Geist',ui-sans-serif,-apple-system,'Segoe UI',Roboto,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
- --acc:#D9A441;--accBg:#2B2617;--warm:#E8886A;--warmBg:#33211A;--ok:#79C9A4;--okBg:#123A2C;--b1:#1C4335;--b2:#2A5B41;--b3:#4A7A46;--b4:#86934A;--b5:#B79A47;--b6:#D9A441;}
+:root{color-scheme:light;
+ --bg:#faf9f7;--card:#ffffff;--ink:#232323;--soft:#575249;--faint:#8a837a;--line:#e3ded4;--font-head:'Instrument Serif',Georgia,'Times New Roman',serif;--font-body:'Geist',ui-sans-serif,-apple-system,'Segoe UI',Roboto,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+ --acc:#c41e30;--accBg:#fbeaec;--warm:#b03a1e;--warmBg:#fcefe9;--ok:#1f6f52;--okBg:#e9f3ef;--b1:#f9e6e8;--b2:#f0c2c8;--b3:#e59aa4;--b4:#d96e7d;--b5:#ce4759;--b6:#c41e30;}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);
  font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
@@ -16,9 +17,13 @@ a{color:var(--acc)}
 .wrap{max-width:1000px;margin:0 auto;padding:0 20px}
 nav{border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:30;
  backdrop-filter:saturate(180%) blur(8px)}
-nav .wrap{display:flex;align-items:center;gap:20px;padding:13px 20px;flex-wrap:wrap}
-nav .nm{font-weight:800;letter-spacing:-.02em;font-size:1rem;font-family:ui-monospace,Menlo,monospace}
-nav a{font-size:.84rem;color:var(--soft);text-decoration:none}
+nav .wrap{display:flex;align-items:center;gap:15px;padding:12px 20px;flex-wrap:nowrap;overflow:hidden}
+nav .brand{display:flex;align-items:center;gap:11px;text-decoration:none;flex-shrink:0}
+nav .brand img{height:20px;width:auto;display:block}
+nav .repo{font-family:ui-monospace,Menlo,monospace;font-size:.72rem;color:var(--faint);
+ border:1px solid var(--line);border-radius:6px;padding:2px 7px;letter-spacing:-.01em}
+@media(max-width:1180px){nav .repo{display:none}}
+nav a{font-size:.82rem;color:var(--soft);text-decoration:none;white-space:nowrap}
 nav a:hover{color:var(--ink)}
 nav .gh{margin-left:auto;font-weight:700;color:var(--ink)}
 @media(max-width:760px){nav .hide{display:none}}
@@ -87,29 +92,36 @@ footer a{color:var(--soft)}
 .pill{display:inline-block;font-size:.68rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;
  padding:2px 9px;border-radius:999px;background:var(--accBg);color:var(--acc);margin-left:7px;vertical-align:2px}
 
-/* ---- Oxford theme: typography + surface overrides ---- */
+/* ---- Brand Light: typography + surface overrides ---- */
 body{font-family:var(--font-body);font-feature-settings:"cv05","ss01"}
 h1,h2{font-family:var(--font-head);font-weight:400}
 h1{letter-spacing:-.005em}
 h2{letter-spacing:0}
 .st .v,.dc .dv,.head .hn,.big .bv{font-family:var(--font-head);font-weight:400;letter-spacing:0}
-nav .nm,code,pre,th,.k,.cap,.in label{font-family:var(--font-mono)}
-.btn.p{background:var(--acc);color:#0E2B22;border-color:var(--acc)}
-.btn.p:hover{opacity:.88}
-pre{background:#071E17;color:#DDE8E0;border:1px solid var(--line)}
-.steps li::before{color:#0E2B22}
-::selection{background:var(--acc);color:#0E2B22}
-textarea::placeholder{color:#6E877A}
-a{text-decoration-color:color-mix(in srgb,var(--acc) 55%,transparent)}
-video.film{width:100%;aspect-ratio:16/9;display:block;border-radius:16px;border:1px solid var(--line);
- background:#061210;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+code,pre,th,.k,.cap,.in label{font-family:var(--font-mono)}
+.btn.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.btn.p:hover{opacity:.9}
+pre{background:#2f2f2f;color:#f4f2ef;border:0}
+.steps li::before{color:#fff}
+::selection{background:var(--acc);color:#fff}
+textarea::placeholder{color:#a8a29a}
+a{text-decoration-color:color-mix(in srgb,var(--acc) 45%,transparent)}
+
+nav{background:#2f2f2f;border-bottom:0;box-shadow:0 1px 0 rgba(0,0,0,.10)}
+nav a{color:#b5b1ab}
+nav a:hover{color:#fff}
+nav .gh{color:#fff}
+nav .repo{color:#a5a09a;border-color:#4d4d4d}
+video.film{width:100%;aspect-ratio:16/9;display:block;border-radius:16px;
+ border:1px solid var(--line);background:#f2f0ec;box-shadow:0 14px 44px rgba(0,0,0,.10)}
+.brandbar span{color:var(--faint)}
 </style></head><body>
 
 <nav><div class="wrap">
-  <span class="nm">rubric-anchor</span>
+  <a class="brand" href="./"><img src="media/talentrubric-logo.png" alt="TalentRubric"><span class="repo">rubric-anchor</span></a>
   <a href="#film">Film</a>
   <a href="#evidence">Evidence</a>
-  <a href="#rules">Rules</a>
+  <a href="#rules" class="hide">Rules</a>
   <a href="#params" class="hide">Parameters</a>
   <a href="#companies">Companies</a>
   <a href="#roles">Roles</a>
@@ -326,6 +338,6 @@ document.getElementById('hm').innerHTML='<tr><th>Level</th>'+
      S.fams.map(function(f){var v=l.share[f]||0;
        var i=Math.min(5,Math.floor(v/mx*6));
        return '<td><div class="cell" style="background:'+(v<0.6?'transparent':SH[i])+';color:'+
-         (v/mx>0.55?'#0E2B22':'var(--ink)')+'">'+v+'</div></td>';}).join('')+'</tr>';
+         (v/mx>0.55?'#fff':'var(--ink)')+'">'+v+'</div></td>';}).join('')+'</tr>';
  }).join('');
 </script></body></html>

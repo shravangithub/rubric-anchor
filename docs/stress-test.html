@@ -5,13 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Shortlist Stress Test — is your AI screening actually sure?</title>
 <meta name="description" content="Paste three AI rankings of the same CVs. Find out which candidates' outcomes were decided by luck.">
+<link rel="icon" type="image/png" href="favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-:root{color-scheme:dark;
- --bg:#0E2B22;--card:#143A2E;--ink:#F2F6F1;--soft:#C0D2C6;--faint:#95AD9F;--line:#235C48;--font-head:'Instrument Serif',Georgia,'Times New Roman',serif;--font-body:'Geist',ui-sans-serif,-apple-system,'Segoe UI',Roboto,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
- --in:#D9A441;--inBg:#2B2617;--un:#E8886A;--unBg:#33211A;--out:#7B9386;--outBg:#173F32;}
+:root{color-scheme:light;
+ --bg:#faf9f7;--card:#ffffff;--ink:#232323;--soft:#575249;--faint:#8a837a;--line:#e3ded4;--font-head:'Instrument Serif',Georgia,'Times New Roman',serif;--font-body:'Geist',ui-sans-serif,-apple-system,'Segoe UI',Roboto,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+ --in:#1f6f52;--inBg:#e9f3ef;--un:#c41e30;--unBg:#fbeaec;--out:#9a948b;--outBg:#f2f0ec;}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);
  font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
@@ -72,23 +73,29 @@ summary{cursor:pointer;font-size:.9rem;color:var(--soft);font-weight:600}
 details p{font-size:.9rem;color:var(--soft);margin:10px 0 0}
 .foot{font-size:.82rem;color:var(--faint);margin-top:26px;text-align:center;line-height:1.6}
 
-/* ---- Oxford theme: typography + surface overrides ---- */
+/* ---- Brand Light: typography + surface overrides ---- */
 body{font-family:var(--font-body);font-feature-settings:"cv05","ss01"}
 h1,h2{font-family:var(--font-head);font-weight:400}
 h1{letter-spacing:-.005em}
 h2{letter-spacing:0}
 .st .v,.dc .dv,.head .hn,.big .bv{font-family:var(--font-head);font-weight:400;letter-spacing:0}
-nav .nm,code,pre,th,.k,.cap,.in label{font-family:var(--font-mono)}
-.btn.p{background:var(--acc);color:#0E2B22;border-color:var(--acc)}
-.btn.p:hover{opacity:.88}
-pre{background:#071E17;color:#DDE8E0;border:1px solid var(--line)}
-.steps li::before{color:#0E2B22}
-::selection{background:var(--acc);color:#0E2B22}
-textarea::placeholder{color:#6E877A}
-a{text-decoration-color:color-mix(in srgb,var(--acc) 55%,transparent)}
+code,pre,th,.k,.cap,.in label{font-family:var(--font-mono)}
+.btn.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.btn.p:hover{opacity:.9}
+pre{background:#2f2f2f;color:#f4f2ef;border:0}
+.steps li::before{color:#fff}
+::selection{background:var(--acc);color:#fff}
+textarea::placeholder{color:#a8a29a}
+a{text-decoration-color:color-mix(in srgb,var(--acc) 45%,transparent)}
+.brandbar{display:flex;align-items:center;gap:14px;text-decoration:none;margin:0 0 30px}
+.brandbar img{height:20px;width:auto;display:block}
+.brandbar span{font-family:ui-monospace,Menlo,monospace;font-size:.74rem;color:var(--faint)}
+.brandbar:hover span{color:var(--ink)}
 </style>
 </head>
 <body><div class="wrap">
+<a class="brandbar" href="index.html"><img src="media/talentrubric-logo-dark.png" alt="TalentRubric"><span>&larr; back to the overview</span></a>
+
 
 <h1>Shortlist Stress Test</h1>
 <p class="sub">Your AI ranked the same CVs three times. Find out which candidates it wasn't actually sure about — before one of them gets rejected by accident.</p>
