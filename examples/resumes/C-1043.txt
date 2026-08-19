@@ -1,0 +1,7 @@
+Work authorization: Authorized to work in India.
+Notice period: 15 days.
+
+Experience
+- Backend Engineer | Tessel Systems | 2019-04 to present
+  Owned the ingestion pipeline. Led the migration off the legacy queue.
+  Worked on distributed tracing and latency budgets. Scale: 2 million events/day.

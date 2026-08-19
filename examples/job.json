@@ -1,0 +1,10 @@
+{
+  "req_id": "REQ-SBE-01",
+  "title": "Senior Backend Engineer, Payments",
+  "job_family_titles": ["engineer", "developer", "sre"],
+  "min_total_years": 5,
+  "min_relevant_years": 3,
+  "max_notice_days": 60,
+  "required_licence": null,
+  "location_required": null
+}

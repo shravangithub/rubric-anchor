@@ -1,0 +1,8 @@
+Work authorization: Authorized to work in India.
+Notice period: 90 days.
+
+Experience
+- Frontend Engineer | Braid UI | 2022-01 to present
+  Built the design system. Owned the component library.
+- Junior Developer | Kestrel Apps | 2020-08 to 2021-12
+  Maintained internal tools.

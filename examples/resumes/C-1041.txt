@@ -1,0 +1,10 @@
+Work authorization: Authorized to work in India, no sponsorship required.
+Notice period: 30 days.
+
+Experience
+- Staff Engineer | Nimbus Payments | 2021-03 to present
+  Owned the ledger service end to end. Led sharding of the settlement store,
+  cut p99 latency 40%. On-call lead for the PCI-scoped payments path.
+  Mentored 4 engineers. Worked cross-functional with product and design.
+- Backend Engineer | Corvid Labs | 2017-06 to 2021-02
+  Built a distributed job scheduler. Improved throughput 3x.

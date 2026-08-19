@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "talentrubric-rank"
+version = "0.1.0"
+description = "Absolute, evidence-anchored resume scoring across 50 parameters. Scores are a property of the candidate, not of the batch."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "TalentRubric Growth Advisors" }]
+keywords = ["recruiting", "hiring", "resume-screening", "knowledge-graph",
+            "ai-fairness", "hr-tech", "auditable-ai"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3.10",
+  "Topic :: Office/Business :: Human Resources",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[project.scripts]
+rubric = "rubric.cli:main"
+
+[tool.setuptools]
+packages = ["rubric"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
