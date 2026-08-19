@@ -1,0 +1,189 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>rubric-anchor — measure candidates, don't rank them</title>
+<meta name="description" content="Open-source candidate scoring where a score is a property of the candidate, not the batch they arrived in. Every score cites the line of the CV it came from.">
+<meta property="og:title" content="rubric-anchor">
+<meta property="og:description" content="Measure candidates. Don't rank them. Open-source, evidence-anchored candidate scoring.">
+<style>
+:root{color-scheme:light;
+ --bg:#fbfaf7;--card:#fff;--ink:#141310;--soft:#544f48;--faint:#867f76;--line:#e4dfd5;
+ --acc:#2a78d6;--accBg:#eaf2fd;--warm:#c8402c;--warmBg:#fdefec;--ok:#2c6f5b;--okBg:#e7f1ee}
+@media (prefers-color-scheme:dark){:root{
+ --bg:#141312;--card:#1e1c1a;--ink:#f1ece3;--soft:#bdb6ab;--faint:#928b81;--line:#332f29;
+ --acc:#3987e5;--accBg:#13202e;--warm:#e0705c;--warmBg:#2b1815;--ok:#69c3a5;--okBg:#152420}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+ font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--acc)}
+.wrap{max-width:900px;margin:0 auto;padding:0 20px}
+nav{border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:20}
+nav .wrap{display:flex;align-items:center;gap:22px;padding-top:14px;padding-bottom:14px;flex-wrap:wrap}
+nav .nm{font-weight:800;letter-spacing:-.02em;font-size:1.02rem;font-family:ui-monospace,Menlo,monospace}
+nav a{font-size:.86rem;color:var(--soft);text-decoration:none}
+nav a:hover{color:var(--ink)}
+nav .gh{margin-left:auto;font-weight:700;color:var(--ink)}
+header{padding:64px 0 46px;border-bottom:1px solid var(--line)}
+h1{font-size:2.7rem;line-height:1.08;margin:0 0 14px;letter-spacing:-.035em}
+@media(max-width:640px){h1{font-size:2.05rem}}
+.tag{font-size:1.18rem;color:var(--soft);margin:0 0 26px;max-width:660px}
+.cta{display:flex;gap:11px;flex-wrap:wrap}
+.btn{display:inline-block;padding:11px 22px;border-radius:999px;text-decoration:none;
+ font-weight:700;font-size:.9rem;border:1.5px solid var(--line);color:var(--ink);background:var(--card)}
+.btn.p{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn:hover{opacity:.87}
+section{padding:52px 0;border-bottom:1px solid var(--line)}
+h2{font-size:1.55rem;margin:0 0 8px;letter-spacing:-.022em}
+.sub{color:var(--soft);margin:0 0 24px;max-width:680px}
+.k{font-size:.7rem;font-weight:800;letter-spacing:.13em;text-transform:uppercase;
+ color:var(--acc);margin-bottom:9px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+@media(max-width:800px){.grid3{grid-template-columns:1fr}}
+.c{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:19px 21px}
+.c h3{margin:0 0 6px;font-size:1.02rem;letter-spacing:-.012em}
+.c p{margin:0;font-size:.9rem;color:var(--soft);line-height:1.55}
+.evi{background:var(--warmBg);border:1.5px solid var(--warm);border-radius:16px;padding:24px 27px}
+.evi h2{margin-bottom:6px}
+table{width:100%;border-collapse:collapse;font-size:.9rem;margin:14px 0 4px;background:var(--card);
+ border-radius:10px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:center}
+th:first-child,td:first-child{text-align:left;font-weight:700}
+th{font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--faint);font-weight:700}
+td{font-variant-numeric:tabular-nums}
+tr.hot td{color:var(--warm);font-weight:700}
+.steps{counter-reset:s;list-style:none;padding:0;margin:0}
+.steps li{counter-increment:s;position:relative;padding-left:46px;margin-bottom:19px}
+.steps li::before{content:counter(s);position:absolute;left:0;top:0;width:30px;height:30px;
+ border-radius:50%;background:var(--acc);color:#fff;display:grid;place-items:center;
+ font-size:.82rem;font-weight:800}
+.steps b{display:block;margin-bottom:2px}
+.steps span{font-size:.9rem;color:var(--soft)}
+.demos{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+@media(max-width:800px){.demos{grid-template-columns:1fr}}
+.d{display:block;background:var(--card);border:1.5px solid var(--line);border-radius:14px;
+ padding:19px 21px;text-decoration:none;color:inherit;transition:.15s}
+.d:hover{border-color:var(--acc);transform:translateY(-2px)}
+.d .t{font-weight:800;font-size:1rem;margin-bottom:5px}
+.d .s{font-size:.87rem;color:var(--soft);line-height:1.5}
+.d .go{font-size:.78rem;color:var(--acc);font-weight:700;margin-top:9px}
+pre{background:var(--ink);color:var(--bg);padding:16px 19px;border-radius:12px;overflow-x:auto;
+ font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.82rem;line-height:1.6}
+.honest{background:var(--okBg);border:1.5px solid var(--ok);border-radius:16px;padding:24px 27px}
+.honest ul{margin:12px 0 0;padding-left:20px}
+.honest li{margin-bottom:9px;font-size:.93rem;color:var(--soft)}
+.honest li b{color:var(--ink)}
+footer{padding:44px 0 64px;font-size:.88rem;color:var(--faint)}
+footer a{color:var(--soft)}
+</style></head><body>
+
+<nav><div class="wrap">
+  <span class="nm">rubric-anchor</span>
+  <a href="#evidence">Evidence</a>
+  <a href="#different">Why different</a>
+  <a href="#try">Try it</a>
+  <a href="#how">How it works</a>
+  <a href="#honest">Limits</a>
+  <a class="gh" href="https://github.com/shravangithub/rubric-anchor">GitHub →</a>
+</div></nav>
+
+<header><div class="wrap">
+  <h1>Measure candidates.<br>Don't rank them.</h1>
+  <p class="tag">Open-source candidate scoring where a score is a property of <em>the candidate</em> — not of the batch they arrived in, the order the files were uploaded, or the day you ran it. Every score cites the line of the CV it came from.</p>
+  <div class="cta">
+    <a class="btn p" href="https://github.com/shravangithub/rubric-anchor">View on GitHub</a>
+    <a class="btn" href="stress-test.html">Test your own screening →</a>
+  </div>
+</div></header>
+
+<section id="evidence"><div class="wrap">
+<div class="evi">
+  <div class="k" style="color:var(--warm)">Measured, not argued</div>
+  <h2>We gave the same 12 CVs to five AI instances in different orders</h2>
+  <p class="sub" style="margin-bottom:0">Twelve comparable senior-engineer CVs. Five independent runs. Same candidates, shuffled sequence. Nothing about anyone changed between runs.</p>
+  <table>
+    <tr><th>candidate</th><th>run 1</th><th>run 2</th><th>run 3</th><th>run 4</th><th>run 5</th><th>swing</th></tr>
+    <tr><td>A</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>0</td></tr>
+    <tr class="hot"><td>G</td><td>6</td><td>8</td><td>11</td><td>4</td><td>5</td><td>7 places</td></tr>
+    <tr class="hot"><td>H</td><td>5</td><td>5</td><td>5</td><td>5</td><td>9</td><td>4 places</td></tr>
+    <tr><td>L</td><td>12</td><td>12</td><td>12</td><td>12</td><td>12</td><td>0</td></tr>
+  </table>
+  <p style="font-size:.92rem;margin:14px 0 0">The extremes never moved. The middle did. <b>G placed 4th in one run and 11th in another on an unchanged CV.</b> H sat at 5th four times — enough to look settled — then 9th.</p>
+  <p style="font-size:.92rem;margin:9px 0 0;color:var(--soft)">At a shortlist of five, <b>a quarter of the pool was unstable</b>. Method, data and caveats: <a href="https://github.com/shravangithub/rubric-anchor/tree/main/experiments/shuffle_llm">experiments/shuffle_llm</a>.</p>
+</div>
+</div></section>
+
+<section id="different"><div class="wrap">
+  <div class="k">Why it's different</div>
+  <h2>Three rules, all enforced by tests</h2>
+  <p class="sub">Not principles in a README — assertions in a test suite that fail if someone changes them.</p>
+  <div class="grid3">
+    <div class="c"><h3>Scored alone, never compared</h3>
+      <p>Each CV is scored on its own against a fixed rubric; the ranking is produced afterwards by sorting numbers. Hand a scorer a list and it raises. A test scores a candidate, runs five others through, scores again, and asserts the number didn't move.</p></div>
+    <div class="c"><h3>No quote, no score</h3>
+      <p>Every model-produced claim must carry a span copied character-for-character from the CV, checked by substring in code. Paraphrase it and the claim is dropped. Hallucination becomes a string comparison.</p></div>
+    <div class="c"><h3>A person makes the adverse call</h3>
+      <p>Only two of eight gates may auto-reject — work authorisation and a legally required licence. Everything else, education included, routes to a human. The machine narrows the pool; a person says no.</p></div>
+  </div>
+</div></section>
+
+<section id="try"><div class="wrap">
+  <div class="k">Try it</div>
+  <h2>Three things you can click right now</h2>
+  <p class="sub">No install, nothing uploaded — everything runs in your browser.</p>
+  <div class="demos">
+    <a class="d" href="stress-test.html">
+      <div class="t">Shortlist Stress Test</div>
+      <div class="s">Paste three rankings from your own AI. It tells you which candidates it wasn't actually sure about.</div>
+      <div class="go">Open the tool →</div></a>
+    <a class="d" href="company-types.html">
+      <div class="t">Parameters &amp; weights</div>
+      <div class="s">All 247 parameters across 12 company types — fintech, GCC, pharma, frontier AI lab and more.</div>
+      <div class="go">Explore →</div></a>
+    <a class="d" href="roles-levels.html">
+      <div class="t">Roles &amp; levels</div>
+      <div class="s">14 roles, 9 levels. See how weight shifts from education at entry to scope at C-level.</div>
+      <div class="go">Explore →</div></a>
+  </div>
+</div></section>
+
+<section id="how"><div class="wrap">
+  <div class="k">How it works</div>
+  <h2>One candidate at a time</h2>
+  <ol class="steps">
+    <li><b>Parse the requirements once</b><span>The JD becomes testable requirements with weights and gate types. A human approves this before any CV is read.</span></li>
+    <li><b>Pull claims with evidence</b><span>Each fact extracted from the CV carries the exact line it came from.</span></li>
+    <li><b>Verify the evidence in code</b><span>Substring check against the source. A claim whose quote isn't verbatim in the document is dropped before it can influence anything.</span></li>
+    <li><b>Redact identity, then compute the gates</b><span>Name, institution and pronouns stripped. Years of experience calculated from dates — 22 of the parameters never touch a model.</span></li>
+    <li><b>Score each parameter in isolation</b><span>No candidate is compared to any other. Order and batch size become irrelevant.</span></li>
+    <li><b>Sort the numbers, then a recruiter decides</b><span>With the full audit record attached: every value, the node that produced it, and every claim that was dropped.</span></li>
+  </ol>
+  <pre>pip install -e .
+python -m rubric params --industry fintech --role backend
+python -m rubric score --job job.json --cvs ./cvs --role backend --level senior
+python -m rubric audit --rankings rankings.json --shortlist 5</pre>
+</div></section>
+
+<section id="honest"><div class="wrap">
+<div class="honest">
+  <div class="k" style="color:var(--ok)">Responsible use</div>
+  <h2>What this does not do</h2>
+  <p class="sub" style="margin-bottom:0">Stated here rather than buried, because a screening tool that oversells itself is the problem it claims to solve.</p>
+  <ul>
+    <li><b>It does not make your shortlist better at predicting talent.</b> It makes it repeatable and explainable. Those are different claims and only the second one is honest.</li>
+    <li><b>It does not validate your rubric.</b> A perfectly built system applying criteria that don't predict job performance will apply them consistently to everyone. The knowledge-graph layer is there to find that out — but it needs a few hundred hires and a couple of years before it says anything.</li>
+    <li><b>It catches noise, not bias.</b> A system that is <em>confidently wrong</em> about a group looks perfectly settled. Only outcome tracking finds that.</li>
+    <li><b>Institution tier is deliberately not a parameter.</b> College ranking is the strongest single proxy for socio-economic background in most markets. A test keeps it out.</li>
+    <li><b>Absence of public work is never a penalty.</b> Employer IP policy, NDAs and unpaid-time inequality suppress GitHub activity independently of ability. Those parameters leave the composite rather than scoring zero.</li>
+    <li><b>The weights are considered judgement, not measured validity.</b> Reweight for your context and record who approved it.</li>
+  </ul>
+</div>
+</div></section>
+
+<footer><div class="wrap">
+  <p><b>rubric-anchor</b> — MIT licensed. 247 parameters, 87 tests, no runtime dependencies.<br>
+  Built by <a href="https://github.com/shravangithub">Shravan</a> at TalentRubric Growth Advisors.</p>
+  <p style="margin-top:14px"><a href="https://github.com/shravangithub/rubric-anchor">GitHub</a> ·
+  <a href="https://github.com/shravangithub/rubric-anchor/tree/main/experiments/shuffle_llm">The experiment</a> ·
+  <a href="stress-test.html">Stress test tool</a></p>
+</div></footer>
+
+</body></html>

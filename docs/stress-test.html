@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shortlist Stress Test — is your AI screening actually sure?</title>
+<meta name="description" content="Paste three AI rankings of the same CVs. Find out which candidates' outcomes were decided by luck.">
+<style>
+:root{color-scheme:light;
+ --bg:#fbfaf7;--card:#fff;--ink:#141310;--soft:#5a554e;--faint:#8b857c;--line:#e5e0d6;
+ --in:#2a78d6;--inBg:#eaf2fd;--un:#eb6834;--unBg:#fdf0e9;--out:#b9b6af;--outBg:#f2f1ee;}
+@media (prefers-color-scheme:dark){:root{
+ --bg:#151412;--card:#1f1d1a;--ink:#f2ede4;--soft:#c0b9ae;--faint:#948d83;--line:#332f29;
+ --in:#3987e5;--inBg:#13202e;--un:#e0855a;--unBg:#2a1a12;--out:#5a5751;--outBg:#242422;}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+ font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:900px;margin:0 auto;padding:34px 18px 70px}
+h1{font-size:1.85rem;line-height:1.15;margin:0 0 8px;letter-spacing:-.025em}
+.sub{color:var(--soft);font-size:1.02rem;margin:0 0 22px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin:16px 0}
+h2{font-size:1.1rem;margin:0 0 4px;letter-spacing:-.01em}
+.hint{font-size:.84rem;color:var(--faint);margin:0 0 14px}
+
+.ins{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:700px){.ins{grid-template-columns:1fr}}
+.in label{display:block;font-size:.72rem;font-weight:800;letter-spacing:.06em;
+ text-transform:uppercase;color:var(--faint);margin-bottom:5px}
+textarea{width:100%;height:190px;resize:vertical;padding:11px 12px;border-radius:10px;
+ border:1.5px solid var(--line);background:var(--bg);color:var(--ink);
+ font:13px/1.55 ui-monospace,Menlo,Consolas,monospace}
+textarea:focus{outline:none;border-color:var(--in)}
+.opts{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px}
+input[type=number]{width:74px;padding:8px 10px;border-radius:9px;border:1.5px solid var(--line);
+ background:var(--bg);color:var(--ink);font:600 15px ui-sans-serif,sans-serif}
+label.f{font-size:.9rem;color:var(--soft)}
+.btn{appearance:none;border:1.5px solid var(--line);background:var(--card);color:var(--ink);
+ font:700 .88rem ui-sans-serif,sans-serif;padding:10px 20px;border-radius:999px;cursor:pointer}
+.btn.p{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn:hover{opacity:.86}
+.err{color:var(--un);font-size:.86rem;margin-top:10px;font-weight:600}
+.counts{display:flex;gap:18px;margin-top:9px;font-size:.78rem;color:var(--faint)}
+.counts b{color:var(--ink)}
+.counts .mm{color:var(--un)}
+.block{background:var(--unBg);border:1.5px solid var(--un);border-radius:15px;
+ padding:19px 23px;margin:16px 0}
+.block .bt{font-size:1.05rem;font-weight:700;color:var(--un);margin-bottom:7px}
+.block p{margin:0;font-size:.94rem;color:var(--soft);line-height:1.55}
+.block ul{margin:9px 0 0;padding-left:20px;font-size:.92rem;color:var(--soft)}
+
+.head{background:var(--unBg);border:1.5px solid var(--un);border-radius:15px;
+ padding:20px 24px;margin:16px 0}
+.head .hn{font-size:2.4rem;font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--un)}
+.head .ht{font-size:1.02rem;margin-top:6px}
+.head.clean{background:var(--inBg);border-color:var(--in)}
+.head.clean .hn{color:var(--in)}
+
+.rows{margin-top:6px}
+.rw{display:grid;grid-template-columns:1fr 130px 118px;gap:10px;align-items:center;
+ padding:9px 12px;border-radius:10px;margin:5px 0;font-size:.92rem;border:1px solid var(--line)}
+@media(max-width:560px){.rw{grid-template-columns:1fr 96px;}.rw .pos{display:none}}
+.rw.in{background:var(--inBg);border-color:var(--in)}
+.rw.un{background:var(--unBg);border-color:var(--un)}
+.rw.out{background:var(--outBg)}
+.rw .nm{font-weight:700}
+.rw .pos{font-size:.8rem;color:var(--soft);font-variant-numeric:tabular-nums}
+.rw .tg{font-size:.72rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;text-align:right}
+.rw.in .tg{color:var(--in)} .rw.un .tg{color:var(--un)} .rw.out .tg{color:var(--faint)}
+
+details{margin-top:18px}
+summary{cursor:pointer;font-size:.9rem;color:var(--soft);font-weight:600}
+details p{font-size:.9rem;color:var(--soft);margin:10px 0 0}
+.foot{font-size:.82rem;color:var(--faint);margin-top:26px;text-align:center;line-height:1.6}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>Shortlist Stress Test</h1>
+<p class="sub">Your AI ranked the same CVs three times. Find out which candidates it wasn't actually sure about — before one of them gets rejected by accident.</p>
+
+<div class="card">
+  <h2>Paste your three rankings</h2>
+  <p class="hint">One name per line, best first. Shuffle the CVs between each ask — that's the whole point.</p>
+  <div class="ins">
+    <div class="in"><label>1st ask</label><textarea id="a" placeholder="Priya&#10;Sam&#10;Vik&#10;..."></textarea></div>
+    <div class="in"><label>2nd ask</label><textarea id="b"></textarea></div>
+    <div class="in"><label>3rd ask</label><textarea id="c"></textarea></div>
+  </div>
+  <div id="counts" class="counts"></div>
+  <div class="opts">
+    <label class="f">Shortlist size</label>
+    <input type="number" id="cut" value="6" min="1">
+    <button class="btn p" id="go">Check it</button>
+    <button class="btn" id="demo">Load an example</button>
+  </div>
+  <div class="err" id="err"></div>
+</div>
+
+<div id="out"></div>
+
+<details>
+  <summary>What this is actually doing</summary>
+  <p>An AI ranking CVs is comparing them against each other. That means the order it gives you depends partly on the order you handed them over. Ask three times with the pile shuffled and most candidates land in roughly the same place — but some jump across your shortlist line.</p>
+  <p>Those are the ones where the AI never really had an answer. Their outcome came down to which single run you happened to use. This tool just finds them, so a person can look properly instead of leaving it to chance.</p>
+  <p><b>What to do with the result:</b> the settled ones need nothing. For each unsettled candidate, check their biggest claim actually appears in their CV, score them on their own against your rubric, and have a named person decide. That's usually a handful of people, not the whole pile.</p>
+  <p><b>Honest limits:</b> this catches candidates the AI is <i>unsure</i> about. It won't catch ones it's <i>confidently wrong</i> about. And three runs finds about three quarters of the genuinely borderline cases, not all of them — so never send an automatic rejection either way.</p>
+</details>
+
+<p class="foot">Runs entirely in your browser. Nothing is uploaded, stored, or sent anywhere.</p>
+
+</div>
+<script>
+var EX={
+ a:"Priya\nVik\nSam\nMeera\nFarah\nTara\nDivya\nNeha\nNikhil\nRohit\nOmar\nAnil",
+ b:"Priya\nVik\nSam\nTara\nMeera\nDivya\nFarah\nNeha\nNikhil\nRohit\nAnil\nOmar",
+ c:"Priya\nVik\nDivya\nSam\nTara\nMeera\nFarah\nNikhil\nNeha\nRohit\nOmar\nAnil"};
+function parse(t){return t.split("\n").map(function(s){return s.trim();})
+  .filter(Boolean).map(function(s){return s.replace(/^\s*\d+[\.\)]\s*/,"");});}
+function key(s){return s.toLowerCase().replace(/\s+/g," ").trim();}
+
+function counts(){
+  var L=[parse(a.value),parse(b.value),parse(c.value)];
+  var mx=Math.max.apply(null,L.map(function(l){return l.length;}));
+  document.getElementById('counts').innerHTML=
+    L.map(function(l,i){
+      var bad = l.length && mx && l.length!==mx;
+      return '<span class="'+(bad?'mm':'')+'">'+(i+1)+(i==0?'st':i==1?'nd':'rd')+
+             ' ask: <b>'+l.length+'</b> names'+(bad?' \u2260':'')+'</span>';
+    }).join('');
+}
+[a,b,c].forEach(function(el){el.addEventListener('input',counts);});
+
+document.getElementById('demo').onclick=function(){
+  a.value=EX.a; b.value=EX.b; c.value=EX.c;
+  document.getElementById('cut').value=6;
+  counts();
+  document.getElementById('go').click();
+};
+
+document.getElementById('go').onclick=function(){
+  var err=document.getElementById('err'), out=document.getElementById('out');
+  err.textContent=""; out.innerHTML="";
+  var L=[parse(a.value),parse(b.value),parse(c.value)];
+  if(L.some(function(l){return l.length<2;}))
+    return err.textContent="Paste all three rankings — one name per line.";
+  var CUT=parseInt(document.getElementById('cut').value,10)||1;
+
+  var pos={}, names={};
+  L.forEach(function(list,i){
+    list.forEach(function(n,idx){
+      var k=key(n); names[k]=names[k]||n;
+      (pos[k]=pos[k]||[])[i]=idx+1;
+    });
+  });
+  var missing=Object.keys(pos).filter(function(k){
+    return pos[k].filter(function(x){return x;}).length<3;});
+
+  if(missing.length){
+    // Do NOT produce a verdict from a partial pile -- a green result here
+    // would be badly misleading.
+    out.innerHTML='<div class="block"><div class="bt">Can\u2019t check this yet \u2014 '+
+      'the three lists aren\u2019t the same people</div>'+
+      '<p>Your lists have <b>'+L[0].length+'</b>, <b>'+L[1].length+'</b> and <b>'+
+      L[2].length+'</b> names. '+missing.length+
+      ' '+(missing.length===1?'person appears':'people appear')+
+      ' in only some of them, so there is nothing to compare them against.</p>'+
+      '<ul><li>'+missing.map(function(k){return names[k];}).join('</li><li>')+'</li></ul>'+
+      '<p style="margin-top:11px">Each box needs the <b>complete</b> ranking of the '+
+      'same pile \u2014 same people, same spelling, just a different order. '+
+      'If a box looks short, scroll inside it: the paste may have been cut off.</p></div>';
+    out.scrollIntoView({behavior:"smooth",block:"start"});
+    return;
+  }
+
+  var rows=Object.keys(pos)
+    .map(function(k){
+      var r=pos[k], mn=Math.min.apply(null,r), mx=Math.max.apply(null,r);
+      var st = mx<=CUT ? "in" : (mn>CUT ? "out" : "un");
+      return {n:names[k], r:r, mn:mn, mx:mx, st:st};
+    }).sort(function(x,y){return x.mn-y.mn;});
+
+  var un=rows.filter(function(r){return r.st==="un";});
+  var inn=rows.filter(function(r){return r.st==="in";});
+
+  var h='<div class="head'+(un.length?'':' clean')+'">'+
+    '<div class="hn">'+un.length+'</div><div class="ht">'+
+    (un.length
+      ? '<b>candidates your AI was not actually sure about.</b> Their place changed depending on which run you looked at — not on anything they wrote. Check these before anyone hears yes or no.'
+      : '<b>Nothing moved across your line.</b> Your setup is steady on this pile — the shortlist is the shortlist. Nothing more to do here.')+
+    '</div></div>';
+
+  h+='<div class="card"><h2>Every candidate</h2><p class="hint">'+
+     inn.length+' locked in · '+un.length+' unsettled · '+
+     (rows.length-inn.length-un.length)+' clearly out</p><div class="rows">';
+  rows.forEach(function(r){
+    var tag = r.st==="in"?"Locked in":r.st==="un"?"Unsettled":"Out";
+    h+='<div class="rw '+r.st+'"><span class="nm">'+r.n+'</span>'+
+       '<span class="pos">placed '+r.r.join(", ")+'</span>'+
+       '<span class="tg">'+tag+'</span></div>';
+  });
+  h+='</div></div>';
+  out.innerHTML=h;
+  out.scrollIntoView({behavior:"smooth",block:"start"});
+};
+counts();
+</script>
+</body></html>
