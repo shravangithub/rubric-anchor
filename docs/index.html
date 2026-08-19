@@ -101,10 +101,13 @@ pre{background:#071E17;color:#DDE8E0;border:1px solid var(--line)}
 ::selection{background:var(--acc);color:#0E2B22}
 textarea::placeholder{color:#6E877A}
 a{text-decoration-color:color-mix(in srgb,var(--acc) 55%,transparent)}
+video.film{width:100%;aspect-ratio:16/9;display:block;border-radius:16px;border:1px solid var(--line);
+ background:#061210;box-shadow:0 20px 60px rgba(0,0,0,.45)}
 </style></head><body>
 
 <nav><div class="wrap">
   <span class="nm">rubric-anchor</span>
+  <a href="#film">Film</a>
   <a href="#evidence">Evidence</a>
   <a href="#rules">Rules</a>
   <a href="#params" class="hide">Parameters</a>
@@ -127,6 +130,15 @@ a{text-decoration-color:color-mix(in srgb,var(--acc) 55%,transparent)}
   </div>
   <div class="stats" id="stats"></div>
 </div></header>
+
+<section id="film"><div class="wrap">
+  <div class="k">Fifty-three seconds</div>
+  <h2>The whole argument, as a film</h2>
+  <p class="sub">Twelve résumés reordered three times, one candidate measured against 247 fixed parameters, and what the graph remembers afterwards.</p>
+  <video class="film" controls preload="metadata" playsinline
+         poster="media/film-poster.jpg"
+         src="media/TalentRubric-Measure-Not-Rank.mp4"></video>
+</div></section>
 
 <section id="evidence"><div class="wrap">
 <div class="evi">

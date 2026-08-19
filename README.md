@@ -9,6 +9,17 @@ CV it came from — no quote, no score.
 A candidate's score is a property of *that candidate* — not of the batch they
 arrived in, the order the files were uploaded, or the day you ran it.
 
+### Watch the 53-second version
+
+[![Measure candidates. Don't rank them.](docs/media/film-poster.jpg)](https://shravangithub.github.io/rubric-anchor/#film)
+
+The film in one line: twelve résumés reordered three times, one candidate
+measured against 247 fixed parameters, and what the graph remembers afterwards.
+Plays on the [project site](https://shravangithub.github.io/rubric-anchor/#film);
+the file itself is at [`docs/media/`](docs/media/).
+
+---
+
 ```bash
 pip install -e .
 python -m rubric params --industry fintech --role backend
