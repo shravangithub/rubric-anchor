@@ -10,7 +10,9 @@ from dataclasses import dataclass, field
 from datetime import date
 
 from . import parameters as P
-from .packs import NEUTRAL_IF_ABSENT, build_rubric
+from .packs import NEUTRAL_IF_ABSENT, build_rubric, INDUSTRY_PACKS
+from .roles import ROLE_PACKS
+from . import levels as LV
 from .evidence import Claim, verify, evidence_ratio
 from .guards import assert_no_protected_attributes, assert_single_candidate
 
@@ -51,11 +53,18 @@ def _cap(v: float, lo: float = 0.0, hi: float = 100.0) -> float:
 
 def score_candidate(candidate_id: str, resume: str, job: dict,
                     extractor, today: date | None = None,
-                    industry: str | None = None) -> Result:
+                    industry: str | None = None,
+                    role: str | None = None,
+                    level: str = "mid") -> Result:
     """Score ONE candidate against the rubric.
 
-    `industry` activates a pack from `rubric.packs`. Absent it, only the
-    role-agnostic core plus education and proof of work are scored.
+    `industry`  what kind of company  -> adds a pack
+    `role`      what the job is       -> adds a pack
+    `level`     seniority             -> REWEIGHTS, adds nothing
+
+    Same instrument at every level, weighted differently -- so a 62 at entry
+    and a 62 at director both mean "met the bar for the level", and the
+    difference between them is inspectable rather than hidden.
     """
     assert_single_candidate(resume)
     assert_no_protected_attributes(job, "the job spec")
@@ -118,7 +127,11 @@ def score_candidate(candidate_id: str, resume: str, job: dict,
     r.scores.update(code_scores)
 
     # ---- scored: MODEL parameters, each evidence-anchored ----------------
-    active = build_rubric(industry)
+    warn = LV.check_role_level(role, level)
+    if warn:
+        r.reasons.append("configuration: " + warn)
+        r.audit.append({"step": "config_warning", "detail": warn})
+    active = build_rubric(industry, role)
     active_scored = [p for p in active if p.kind is P.Kind.SCORED]
     model_keys = [p.key for p in active_scored
                   if p.how is P.How.MODEL and p.key not in r.scores]
@@ -145,11 +158,18 @@ def score_candidate(candidate_id: str, resume: str, job: dict,
     # Weights renormalise over the parameters actually in play, so activating
     # an industry pack -- or excluding a not-applicable one -- rescales
     # cleanly instead of quietly shrinking everything else.
-    weights = {p.key: p.weight for p in active_scored if p.key in r.scores}
+    role_fams = {p.family for p in ROLE_PACKS.get((role or "").lower(), [])}
+    ind_fams = {p.family for p in INDUSTRY_PACKS.get((industry or "").lower(), [])}
+    weights = {}
+    for p in active_scored:
+        if p.key in r.scores:
+            weights[p.key] = p.weight * LV.multiplier(
+                level, p.family, role_fams, ind_fams)
     tot = sum(weights.values())
     r.composite = round(sum(r.scores[k] * (weights[k] / tot) for k in weights), 2)
     r.audit.append({"step": "composite", "parameters_used": len(weights),
-                    "industry_pack": industry or "none"})
+                    "industry_pack": industry or "none",
+                    "role_pack": role or "none", "level": level})
 
     # ---- policy ----------------------------------------------------------
     failed = [k for k, ok in r.gates.items() if not ok]

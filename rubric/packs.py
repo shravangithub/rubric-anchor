@@ -236,10 +236,16 @@ NEUTRAL_IF_ABSENT = frozenset(p.key for p in PROOF_OF_WORK) | {
 
 
 def build_rubric(industry: str | None = None,
+                 role: str | None = None,
                  include_education: bool = True,
                  include_proof_of_work: bool = True) -> list[Parameter]:
-    """The active parameter set for one requisition."""
+    """The active parameter set for one requisition.
+
+    core + education + proof of work + one industry pack + one role pack.
+    Level does not appear here -- it reweights, it does not add. See levels.py.
+    """
     from .parameters import ALL as CORE
+    from .roles import ROLE_PACKS
     out = list(CORE)
     if include_education:
         out += EDUCATION
@@ -252,6 +258,13 @@ def build_rubric(industry: str | None = None,
                 f"unknown industry '{industry}'. "
                 f"Available: {', '.join(sorted(INDUSTRY_PACKS))}")
         out += INDUSTRY_PACKS[key]
+    if role:
+        rkey = role.lower()
+        if rkey not in ROLE_PACKS:
+            raise ValueError(
+                f"unknown role '{role}'. "
+                f"Available: {', '.join(sorted(ROLE_PACKS))}")
+        out += ROLE_PACKS[rkey]
     keys = [p.key for p in out]
     if len(keys) != len(set(keys)):
         dupes = {k for k in keys if keys.count(k) > 1}

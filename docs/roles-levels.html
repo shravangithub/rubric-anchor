@@ -1,0 +1,168 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Roles, levels and weights</title>
+<style>
+:root{color-scheme:light;
+ --bg:#fbfaf7;--card:#fff;--ink:#141310;--soft:#5a554e;--faint:#8b857c;--line:#e5e0d6;
+ --b1:#cde2fb;--b2:#9ec5f4;--b3:#6da7ec;--b4:#3987e5;--b5:#2a78d6;--b6:#184f95;
+ --acc:#2a78d6;--warm:#eb6834;}
+@media (prefers-color-scheme:dark){:root{
+ --bg:#151412;--card:#1f1d1a;--ink:#f2ede4;--soft:#c0b9ae;--faint:#948d83;--line:#332f29;
+ --b1:#184f95;--b2:#1c5cab;--b3:#256abf;--b4:#3987e5;--b5:#5598e7;--b6:#86b6ef;
+ --acc:#3987e5;--warm:#e0855a;}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+ font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1100px;margin:0 auto;padding:38px 20px 80px}
+h1{font-size:1.95rem;line-height:1.15;margin:0 0 8px;letter-spacing:-.025em}
+h2{font-size:1.3rem;margin:46px 0 5px;letter-spacing:-.018em}
+h3{font-size:1rem;margin:26px 0 8px;color:var(--soft);font-weight:700;
+   text-transform:uppercase;letter-spacing:.08em;font-size:.75rem}
+.lede{color:var(--soft);font-size:1.02rem;margin:0 0 6px}
+.note{color:var(--faint);font-size:.83rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin:16px 0}
+
+/* dimension diagram */
+.dim{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-top:14px}
+@media(max-width:760px){.dim{grid-template-columns:repeat(2,1fr)}}
+.dc{border:1.5px solid var(--line);border-radius:13px;padding:14px 15px;background:var(--card)}
+.dc.hl{border-color:var(--acc)}
+.dc .dt{font-size:.68rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--faint)}
+.dc .dv{font-size:1.5rem;font-weight:800;letter-spacing:-.03em;margin:3px 0 1px}
+.dc .dd{font-size:.78rem;color:var(--soft);line-height:1.35}
+.dc.hl .dv{color:var(--acc)}
+
+/* level heatmap */
+.hm{overflow-x:auto;margin-top:12px}
+table.hm-t{border-collapse:collapse;font-size:.78rem;width:100%;min-width:820px}
+.hm-t th{font-weight:700;color:var(--faint);font-size:.66rem;text-transform:uppercase;
+ letter-spacing:.06em;padding:7px 5px;text-align:center;white-space:nowrap}
+.hm-t th.lv{text-align:left;padding-left:2px}
+.hm-t td{padding:0;text-align:center}
+.hm-t td.lv{text-align:left;padding:7px 8px 7px 2px;white-space:nowrap}
+.hm-t td.lv b{font-weight:700}
+.hm-t td.lv span{color:var(--faint);font-size:.72rem;display:block}
+.cell{margin:2px;height:34px;border-radius:6px;display:flex;align-items:center;
+ justify-content:center;font-weight:700;font-size:.74rem;font-variant-numeric:tabular-nums}
+
+/* role cards */
+.rl{display:grid;grid-template-columns:repeat(2,1fr);gap:13px;margin-top:12px}
+@media(max-width:860px){.rl{grid-template-columns:1fr}}
+.r{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.r .rt{font-weight:800;font-size:1rem;letter-spacing:-.012em}
+.r .rb{font-size:.81rem;color:var(--soft);margin:2px 0 3px;line-height:1.4}
+.r .rs{font-size:.71rem;color:var(--faint);margin-bottom:10px}
+.r .rs b{color:var(--acc);font-size:.84rem}
+.pr{display:grid;grid-template-columns:1fr 78px 40px;gap:8px;align-items:center;
+ font-size:.78rem;margin:4px 0}
+.pr .pn{color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pr.t .pn{color:var(--ink);font-weight:700}
+.pr .pb{height:8px;background:var(--line);border-radius:5px;overflow:hidden}
+.pr .pb i{display:block;height:100%;border-radius:5px;background:var(--b5)}
+.pr .pw{text-align:right;font-size:.71rem;color:var(--faint);font-variant-numeric:tabular-nums}
+details{margin-top:9px}
+summary{cursor:pointer;font-size:.79rem;color:var(--acc);font-weight:600}
+.pl{display:grid;grid-template-columns:1fr 60px;gap:8px;font-size:.75rem;
+ padding:4px 0;border-bottom:1px solid var(--line);color:var(--soft)}
+.pl b{color:var(--ink);font-weight:600}
+.pl .w{text-align:right;color:var(--faint);font-variant-numeric:tabular-nums}
+.big{border-radius:15px;padding:19px 23px;margin:22px 0 0;background:var(--card);border:1.5px solid var(--acc)}
+.big.plain{border-color:var(--line)}
+.big .l{font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:7px}
+.big p{margin:0;font-size:1.02rem;line-height:1.55}
+.big p+p{margin-top:9px;font-size:.91rem;color:var(--soft)}
+</style></head><body><div class="wrap">
+
+<h1>Roles, levels and weights</h1>
+<p class="lede"><b id="tot"></b> parameters defined. <b id="act"></b> run on one requisition. <b id="cmb"></b> possible configurations.</p>
+
+<div class="card">
+  <h2 style="margin:0 0 4px;font-size:1.1rem">Four dimensions, three of which add parameters</h2>
+  <div class="dim">
+    <div class="dc"><div class="dt">Always on</div><div class="dv">66</div>
+      <div class="dd">Core 50 + education 8 + proof of work 8</div></div>
+    <div class="dc"><div class="dt">What company</div><div class="dv" id="ni"></div>
+      <div class="dd">Industry pack — fintech, pharma, GCC, frontier AI…</div></div>
+    <div class="dc"><div class="dt">What job</div><div class="dv" id="nr"></div>
+      <div class="dd">Role pack — backend, SRE, PM, SDR, CEO…</div></div>
+    <div class="dc hl"><div class="dt">How senior</div><div class="dv" id="nl"></div>
+      <div class="dd"><b>Reweights. Adds nothing.</b> Same instrument at every level.</div></div>
+  </div>
+  <p class="note" style="margin-top:13px">If seniority added parameters, an entry candidate would be measured on a different instrument from a director and the two scores would not be comparable. Instead every level scores the same things and weights them differently — so 62 at entry and 62 at director both mean "met the bar for the level".</p>
+</div>
+
+<h2>What each level actually cares about</h2>
+<p class="lede" style="font-size:.94rem">Share of the final score by family. Backend + fintech shown; the shape holds for any pairing.</p>
+<div class="card" style="padding:16px 18px">
+  <div class="hm"><table class="hm-t" id="hm"></table></div>
+</div>
+
+<div class="big">
+  <div class="l">Read the two ends of that table</div>
+  <p>At <b>entry</b>: proof of work 21%, skills 19%, education 17% — <b>57% of the score is what they've learned and built</b>, because there is no track record yet.</p>
+  <p>At <b>C-level</b>: role pack 25%, scope 21%, industry 16% — and education has fallen to 3.1%, proof of work to 2.6%. Nobody hires a CEO on their GitHub. The instrument is identical; only the emphasis moved.</p>
+</div>
+
+<h2>Fourteen roles</h2>
+<div id="roles"></div>
+
+<div class="big plain">
+  <div class="l">Two guardrails on pairing</div>
+  <p>Pair a leadership pack with a junior level, or an IC pack with C-level, and the system <b>warns rather than blocks</b>.</p>
+  <p>It tells you the pairing looks wrong and why — "most candidates will score near zero on these parameters" — then scores anyway. Odd pairings are sometimes correct (a founding engineer, a technical CEO). That is the recruiter's call to make, not the tool's to refuse.</p>
+</div>
+
+<div class="big plain">
+  <div class="l">The caveat, again, because it matters more as this grows</div>
+  <p>1,512 configurations is a lot of surface area, and <b>none of these weights is empirically validated</b>.</p>
+  <p>They encode considered judgement about relative importance — defensible in a room, not measured against outcomes. The bigger this gets, the more important it is to run <code>graph.parameter_separation()</code> once you have real hires behind it, and let the data delete the parameters that were never doing any work.</p>
+</div>
+
+</div>
+<script>var R={"levels": [{"key": "entry", "label": "Entry / Graduate", "years": "0\u20131 yrs", "note": "There is no track record yet, so the evidence that exists -- what they studied and what they have built -- carries the load.", "share": {"education": 16.9, "proof_of_work": 21.2, "skills": 19.3, "experience": 4.7, "scope": 3.8, "trajectory": 2.9, "domain": 4.1, "integrity": 7.0, "role": 11.2, "industry": 9.1}}, {"key": "junior", "label": "Junior", "years": "1\u20133 yrs", "note": "", "share": {"education": 12.4, "proof_of_work": 16.0, "skills": 19.4, "experience": 7.0, "scope": 6.4, "trajectory": 4.3, "domain": 5.5, "integrity": 5.9, "role": 12.7, "industry": 10.4}}, {"key": "mid", "label": "Mid-level", "years": "3\u20136 yrs", "note": "The crossover point. Demonstrated work now outweighs credentials.", "share": {"education": 6.3, "proof_of_work": 10.7, "skills": 16.3, "experience": 10.7, "scope": 11.7, "trajectory": 6.6, "domain": 6.3, "integrity": 5.3, "role": 14.2, "industry": 11.9}}, {"key": "senior", "label": "Senior", "years": "6\u201310 yrs", "note": "", "share": {"education": 4.0, "proof_of_work": 9.3, "skills": 14.3, "experience": 11.2, "scope": 14.5, "trajectory": 6.9, "domain": 6.0, "integrity": 5.1, "role": 16.0, "industry": 12.5}}, {"key": "lead", "label": "Staff / Principal / Lead", "years": "8\u201315 yrs", "note": "Individual contributor, but scope is now the differentiator.", "share": {"education": 3.2, "proof_of_work": 8.8, "skills": 12.4, "experience": 10.7, "scope": 15.9, "trajectory": 7.8, "domain": 6.9, "integrity": 4.9, "role": 16.4, "industry": 13.0}}, {"key": "manager", "label": "Manager", "years": "6\u201312 yrs", "note": "The first level where people outcomes count more than personal output.", "share": {"education": 3.4, "proof_of_work": 6.6, "skills": 9.2, "experience": 10.3, "scope": 18.0, "trajectory": 8.9, "domain": 6.1, "integrity": 5.2, "role": 18.6, "industry": 13.8}}, {"key": "director", "label": "Director / Head of", "years": "10\u201318 yrs", "note": "", "share": {"education": 3.3, "proof_of_work": 4.5, "skills": 6.3, "experience": 9.9, "scope": 19.5, "trajectory": 9.1, "domain": 7.6, "integrity": 5.0, "role": 20.3, "industry": 14.4}}, {"key": "vp", "label": "VP", "years": "12\u201320 yrs", "note": "", "share": {"education": 3.2, "proof_of_work": 3.5, "skills": 4.3, "experience": 8.8, "scope": 20.2, "trajectory": 9.6, "domain": 8.1, "integrity": 4.9, "role": 22.3, "industry": 15.2}}, {"key": "c_level", "label": "C-level (CEO / CTO / COO)", "years": "15+ yrs", "note": "Hire for judgement, scope and track record. Technical depth still matters for a CTO -- but it is table stakes, not the differentiator.", "share": {"education": 3.1, "proof_of_work": 2.6, "skills": 3.0, "experience": 7.5, "scope": 20.5, "trajectory": 9.8, "domain": 8.3, "integrity": 4.7, "role": 24.9, "industry": 15.7}}], "groups": [{"group": "Engineering & Product", "roles": [{"key": "backend", "label": "Backend", "blurb": "Systems, data models, concurrency, production debugging.", "n": 7, "share": 13.9, "params": [{"k": "system design depth", "l": "Designed systems, not just features", "w": 0.05}, {"k": "data modelling", "l": "Schema, consistency and storage choices", "w": 0.04}, {"k": "concurrency and state", "l": "Concurrency, idempotency, race conditions", "w": 0.04}, {"k": "api contract discipline", "l": "Versioning, compatibility, contracts", "w": 0.035}, {"k": "performance tuning", "l": "Profiled and improved real bottlenecks", "w": 0.035}, {"k": "production debugging", "l": "Diagnosed live production failures", "w": 0.035}, {"k": "testing discipline", "l": "Tests as a design tool, not an afterthought", "w": 0.03}]}, {"key": "fde", "label": "Fde", "blurb": "Ships inside the customer's world. Ambiguity is the job.", "n": 7, "share": 14.1, "params": [{"k": "customer facing delivery", "l": "Built directly with and for a customer", "w": 0.05}, {"k": "ambiguity tolerance", "l": "Shipped without a written spec", "w": 0.045}, {"k": "integration into client stack", "l": "Worked inside someone else's system", "w": 0.04}, {"k": "technical translation", "l": "Turned business need into architecture", "w": 0.04}, {"k": "solution prototyping", "l": "Fast prototypes that survived contact", "w": 0.035}, {"k": "deployment in constrained env", "l": "Air-gapped, on-prem or regulated deploys", "w": 0.03}, {"k": "post deploy ownership", "l": "Stayed with it after go-live", "w": 0.03}]}, {"key": "devops", "label": "Devops", "blurb": "Pipelines, IaC, releases. Makes other engineers faster.", "n": 7, "share": 13.2, "params": [{"k": "pipeline ownership", "l": "Owned CI/CD end to end", "w": 0.045}, {"k": "infrastructure as code", "l": "Declarative, reviewed, versioned infra", "w": 0.04}, {"k": "release engineering", "l": "Safe, frequent, reversible releases", "w": 0.04}, {"k": "container orchestration", "l": "Kubernetes or equivalent in production", "w": 0.035}, {"k": "developer enablement", "l": "Made other engineers faster", "w": 0.035}, {"k": "secrets and supply chain", "l": "Secrets, artefact and dependency hygiene", "w": 0.03}, {"k": "environment parity", "l": "Reproducible environments", "w": 0.025}]}, {"key": "sre", "label": "Sre", "blurb": "SLOs, incidents, observability, toil.", "n": 7, "share": 13.6, "params": [{"k": "slo ownership", "l": "Defined and defended SLOs", "w": 0.05}, {"k": "incident command", "l": "Ran incidents, not just attended them", "w": 0.045}, {"k": "observability engineering", "l": "Built the ability to see failures", "w": 0.04}, {"k": "toil reduction", "l": "Automated away recurring operational work", "w": 0.035}, {"k": "capacity and load", "l": "Load testing, capacity, degradation modes", "w": 0.035}, {"k": "postmortem quality", "l": "Blameless analysis that changed something", "w": 0.03}, {"k": "chaos and resilience", "l": "Deliberately tested failure paths", "w": 0.025}]}, {"key": "qa", "label": "Qa", "blurb": "Strategy over cases. Risk-based, automated, shift-left.", "n": 7, "share": 13.4, "params": [{"k": "test strategy design", "l": "Designed a strategy, not just cases", "w": 0.05}, {"k": "automation coverage", "l": "Built durable automated suites", "w": 0.045}, {"k": "defect analysis", "l": "Root-caused rather than logged", "w": 0.04}, {"k": "risk based prioritisation", "l": "Tested by risk, not by checklist", "w": 0.035}, {"k": "performance and load testing", "l": "Non-functional testing depth", "w": 0.03}, {"k": "shift left practice", "l": "Quality moved earlier in the cycle", "w": 0.03}, {"k": "release gatekeeping", "l": "Held or released with evidence", "w": 0.025}]}, {"key": "product_manager", "label": "Product Manager", "blurb": "Frames the problem, defends the metric, says no.", "n": 7, "share": 14.3, "params": [{"k": "problem framing", "l": "Framed the problem before the solution", "w": 0.05}, {"k": "prioritisation rigour", "l": "Said no with a defensible reason", "w": 0.045}, {"k": "customer evidence", "l": "Decisions traceable to real users", "w": 0.045}, {"k": "metric definition", "l": "Chose and defended the right metric", "w": 0.04}, {"k": "cross functional influence", "l": "Moved work without authority", "w": 0.035}, {"k": "roadmap and tradeoffs", "l": "Sequenced under real constraint", "w": 0.03}, {"k": "launch and adoption", "l": "Shipped and drove adoption", "w": 0.03}]}]}, {"group": "Go-to-market", "roles": [{"key": "marketing", "label": "Marketing", "blurb": "Positioning to pipeline, measured honestly.", "n": 7, "share": 13.9, "params": [{"k": "pipeline contribution", "l": "Marketing-sourced pipeline attributed", "w": 0.05}, {"k": "positioning and messaging", "l": "Sharpened how the product is described", "w": 0.045}, {"k": "channel ownership", "l": "Owned a channel to a number", "w": 0.045}, {"k": "content and demand", "l": "Content that produced measurable demand", "w": 0.035}, {"k": "analytics and attribution", "l": "Measured honestly, including failures", "w": 0.035}, {"k": "budget efficiency", "l": "CAC, ROAS or equivalent discipline", "w": 0.03}, {"k": "brand and category", "l": "Built brand or defined a category", "w": 0.025}]}, {"key": "sales", "label": "Sales", "blurb": "A number, a cycle, a committee, a close.", "n": 7, "share": 13.6, "params": [{"k": "quota attainment", "l": "Consistent attainment against a stated number", "w": 0.055}, {"k": "deal size and cycle", "l": "Deal size and cycle length handled", "w": 0.045}, {"k": "complex stakeholder sale", "l": "Multi-stakeholder or committee sales", "w": 0.04}, {"k": "pipeline discipline", "l": "Forecast accuracy and hygiene", "w": 0.035}, {"k": "negotiation and close", "l": "Closed under real commercial pressure", "w": 0.035}, {"k": "territory or segment", "l": "Segment and territory relevance", "w": 0.025}, {"k": "methodology fluency", "l": "MEDDIC, Challenger or similar, applied", "w": 0.025}]}, {"key": "business_development", "label": "Business Development", "blurb": "Originates and structures, not just introduces.", "n": 6, "share": 12.7, "params": [{"k": "partnership origination", "l": "Sourced partnerships that closed", "w": 0.05}, {"k": "commercial structuring", "l": "Structured terms, not just intros", "w": 0.045}, {"k": "new market entry", "l": "Opened a market, segment or geography", "w": 0.045}, {"k": "revenue attribution", "l": "Partnership revenue actually attributed", "w": 0.04}, {"k": "ecosystem relationships", "l": "Durable relationships in the ecosystem", "w": 0.035}, {"k": "long cycle persistence", "l": "Carried multi-quarter cycles", "w": 0.025}]}, {"key": "sdr", "label": "Sdr", "blurb": "Meetings that convert. Coachability is the signal.", "n": 7, "share": 14.1, "params": [{"k": "meeting generation", "l": "Qualified meetings booked against target", "w": 0.055}, {"k": "outbound craft", "l": "Personalised outbound that got replies", "w": 0.045}, {"k": "qualification discipline", "l": "Qualified out early and honestly", "w": 0.04}, {"k": "ae conversion quality", "l": "Meetings that converted downstream", "w": 0.04}, {"k": "coachability evidence", "l": "Improved measurably after feedback", "w": 0.035}, {"k": "activity consistency", "l": "Sustained volume without burning lists", "w": 0.03}, {"k": "tooling fluency", "l": "CRM and sequencing tooling", "w": 0.025}]}, {"key": "customer_success", "label": "Customer Success", "blurb": "Retention, expansion, time to value.", "n": 7, "share": 13.6, "params": [{"k": "retention and renewal", "l": "Owned renewal or gross retention", "w": 0.055}, {"k": "expansion revenue", "l": "Grew accounts, not just kept them", "w": 0.045}, {"k": "onboarding and time to value", "l": "Shortened time to first value", "w": 0.04}, {"k": "escalation handling", "l": "Recovered at-risk accounts", "w": 0.04}, {"k": "account portfolio scale", "l": "Book size and account complexity", "w": 0.03}, {"k": "product feedback loop", "l": "Fed the field back into product", "w": 0.025}, {"k": "health scoring discipline", "l": "Systematic account health practice", "w": 0.025}]}]}, {"group": "Leadership", "roles": [{"key": "eng_leadership", "label": "Eng Leadership", "blurb": "Org design, technical strategy, predictable delivery.", "n": 8, "share": 16.7, "params": [{"k": "org design and scaling", "l": "Designed and scaled an engineering org", "w": 0.055}, {"k": "technical strategy", "l": "Set direction others could execute against", "w": 0.055}, {"k": "delivery predictability", "l": "Made delivery predictable at scale", "w": 0.045}, {"k": "hiring and bar setting", "l": "Built the hiring bar and held it", "w": 0.04}, {"k": "manager development", "l": "Grew managers, not only engineers", "w": 0.04}, {"k": "exec and board communication", "l": "Credible with the board and peers", "w": 0.035}, {"k": "platform vs product balance", "l": "Balanced platform against roadmap", "w": 0.03}, {"k": "engineering cost ownership", "l": "Owned build and run cost", "w": 0.03}]}, {"key": "exec_leadership", "label": "Exec Leadership", "blurb": "P&L, strategy to execution, board, crisis.", "n": 8, "share": 17.1, "params": [{"k": "pnl ownership", "l": "Owned a profit and loss line", "w": 0.06}, {"k": "strategy to execution", "l": "Set strategy and made it happen", "w": 0.055}, {"k": "org transformation", "l": "Led a genuine change, not a reorg deck", "w": 0.045}, {"k": "capital and fundraising", "l": "Raised or allocated capital", "w": 0.04}, {"k": "board and governance", "l": "Operated with a board and governance", "w": 0.04}, {"k": "crisis leadership", "l": "Led through a real crisis", "w": 0.04}, {"k": "market and competitive read", "l": "Read the market ahead of others", "w": 0.035}, {"k": "succession and bench", "l": "Built a bench behind them", "w": 0.025}]}, {"key": "gtm_leadership", "label": "Gtm Leadership", "blurb": "Revenue ownership, motion design, forecast credibility.", "n": 7, "share": 15.4, "params": [{"k": "revenue ownership", "l": "Carried a company-level revenue number", "w": 0.06}, {"k": "gtm motion design", "l": "Designed the motion, not just ran it", "w": 0.05}, {"k": "team scaling and quota", "l": "Scaled a quota-carrying team", "w": 0.045}, {"k": "pricing and packaging", "l": "Owned pricing and packaging decisions", "w": 0.04}, {"k": "forecast credibility", "l": "Forecasts the board could rely on", "w": 0.04}, {"k": "customer segment expansion", "l": "Moved the company up or down market", "w": 0.035}, {"k": "channel and partner strategy", "l": "Built channel or partner-led growth", "w": 0.03}]}]}], "fams": ["education", "proof_of_work", "skills", "experience", "scope", "trajectory", "domain", "integrity", "role", "industry"], "total": 247, "combos": 1512, "nind": 12, "nrole": 14, "nlev": 9, "active": 80};
+</script>
+<script>
+document.getElementById('tot').textContent=R.total;
+document.getElementById('act').textContent=R.active;
+document.getElementById('cmb').textContent=R.combos.toLocaleString();
+document.getElementById('ni').textContent=R.nind;
+document.getElementById('nr').textContent=R.nrole;
+document.getElementById('nl').textContent=R.nlev;
+
+var SH=['var(--b1)','var(--b2)','var(--b3)','var(--b4)','var(--b5)','var(--b6)'];
+function shade(v,max){
+  if(v<=0.5) return 'transparent';
+  var i=Math.min(5,Math.floor(v/max*6));
+  return SH[i];
+}
+var maxV=0;
+R.levels.forEach(function(l){R.fams.forEach(function(f){maxV=Math.max(maxV,l.share[f]);});});
+var hm=document.getElementById('hm');
+hm.innerHTML='<tr><th class="lv">Level</th>'+
+  R.fams.map(function(f){return '<th>'+f.replace(/_/g,' ')+'</th>';}).join('')+'</tr>'+
+  R.levels.map(function(l){
+    return '<tr><td class="lv"><b>'+l.label+'</b><span>'+l.years+'</span></td>'+
+      R.fams.map(function(f){
+        var v=l.share[f];
+        var dark = v/maxV>0.55;
+        return '<td><div class="cell" style="background:'+shade(v,maxV)+';color:'+
+          (dark?'#fff':'var(--ink)')+'">'+v+'</div></td>';}).join('')+'</tr>';
+  }).join('');
+
+document.getElementById('roles').innerHTML=R.groups.map(function(g){
+  return '<h3>'+g.group+'</h3><div class="rl">'+g.roles.map(function(r){
+    var mw=Math.max.apply(null,r.params.map(function(p){return p.w;}));
+    var rows=r.params.map(function(p,i){
+      return '<div class="pr'+(i<2?' t':'')+'"><span class="pn">'+p.k+'</span>'+
+        '<span class="pb"><i style="width:'+(p.w/mw*100)+'%"></i></span>'+
+        '<span class="pw">'+p.w.toFixed(3)+'</span></div>';}).join('');
+    var det=r.params.map(function(p){
+      return '<div class="pl"><span><b>'+p.k+'</b> — '+p.l+'</span>'+
+        '<span class="w">'+p.w.toFixed(3)+'</span></div>';}).join('');
+    return '<div class="r"><div class="rt">'+r.label+'</div>'+
+      '<div class="rb">'+r.blurb+'</div>'+
+      '<div class="rs"><b>'+r.share+'%</b> of the composite · '+r.n+' parameters</div>'+
+      rows+'<details><summary>what each one means</summary>'+det+'</details></div>';
+  }).join('')+'</div>';
+}).join('');
+</script></body></html>

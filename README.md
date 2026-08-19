@@ -1,14 +1,15 @@
 # TalentRubric Rank
 
-**Absolute, evidence-anchored resume scoring. 133 parameters, ~72 active per role.**
+**Absolute, evidence-anchored resume scoring. 247 parameters, ~80 active per role.**
 
 A candidate's score is a property of *that candidate* — not of the batch they
 arrived in, the order the files were uploaded, or the day you ran it.
 
 ```bash
 pip install -e .
-python -m rubric params --industry fintech                 # the active parameter set
-python -m rubric score --job examples/job.json --cvs examples/resumes --industry fintech
+python -m rubric params --industry fintech --role backend
+python -m rubric score --job examples/job.json --cvs examples/resumes \
+       --industry fintech --role backend --level senior
 python -m rubric audit --rankings examples/rankings.json --shortlist 4
 ```
 
@@ -91,7 +92,38 @@ compliance control that can be ignored is not a control.
 ## The parameters
 
 A requisition scores on **core 50 + education 8 + proof of work 8 + one
-industry pack**. 133 are defined; roughly 72 run on any given role.
+industry pack + one role pack**, reweighted by **level**. 247 are defined;
+roughly 80 run on any given requisition. 1,512 possible configurations.
+
+**Level reweights — it never adds parameters.** If seniority added parameters,
+an entry candidate would be measured on a different instrument from a director
+and the two scores would not be comparable. Every level scores the same things
+and weights them differently, so 62 at entry and 62 at director both mean "met
+the bar for the level" — and the difference between them is inspectable.
+
+| | entry | mid | c-level |
+|---|---|---|---|
+| education | 16.9% | 6.3% | 3.1% |
+| proof of work | 21.2% | 10.7% | 2.6% |
+| skills | 19.3% | 16.3% | 3.0% |
+| scope | 3.8% | 11.7% | 20.5% |
+| role pack | 11.2% | 14.2% | 24.9% |
+
+**Roles** (`--role`), 14 across three groups:
+`backend` `fde` `devops` `sre` `qa` `product_manager` ·
+`marketing` `sales` `business_development` `sdr` `customer_success` ·
+`eng_leadership` `exec_leadership` `gtm_leadership`
+
+**Levels** (`--level`), 9: `entry` `junior` `mid` `senior` `lead` `manager`
+`director` `vp` `c_level`
+
+Pair a leadership pack with a junior level and the system *warns rather than
+blocks* — odd pairings are sometimes correct (a founding engineer, a technical
+CEO), and that is the recruiter's call, not the tool's.
+
+See [`docs/roles-levels.html`](docs/roles-levels.html) and
+[`docs/company-types.html`](docs/company-types.html) — both generated from the
+code, so they cannot drift.
 
 | Core family | Count | In code |
 |---|---|---|
@@ -213,7 +245,7 @@ for a new role is permitted in your jurisdiction.
 pip install -e ".[dev]" && pytest -q
 ```
 
-43 tests. They are the specification: if you change a rule, a test should fail
+57 tests. They are the specification: if you change a rule, a test should fail
 and you should have to write down why.
 
 Some of them exist to stop a well-meaning future change: `test_institution_tier_is_not_a_parameter`,

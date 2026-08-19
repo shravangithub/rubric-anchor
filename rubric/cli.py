@@ -16,7 +16,7 @@ from .audit import analyse, report
 
 def _params(args):
     from .packs import build_rubric, INDUSTRY_PACKS
-    rows = build_rubric(args.industry)
+    rows = build_rubric(args.industry, getattr(args, "role", None))
     rows = [p for p in rows if not args.family or p.family == args.family]
     print(f"{'key':<30}{'family':<13}{'kind':<8}{'how':<7}{'weight':>8}  auto-reject")
     print("-" * 82)
@@ -28,8 +28,9 @@ def _params(args):
           f"({sum(1 for p in rows if p.how is P.How.CODE)} computed in code)")
     if not args.industry:
         from .packs import INDUSTRY_PACKS
-        print(f"add --industry to include a pack: "
-              f"{', '.join(sorted(INDUSTRY_PACKS))}")
+        from .roles import ROLE_PACKS
+        print(f"--industry: {', '.join(sorted(INDUSTRY_PACKS))}")
+        print(f"--role    : {', '.join(sorted(ROLE_PACKS))}")
 
 
 def _score(args):
@@ -42,7 +43,9 @@ def _score(args):
         cid = os.path.splitext(os.path.basename(f))[0]
         r = score_candidate(cid, open(f).read(), job, NullExtractor(),
                             today=date.fromisoformat(args.today) if args.today else None,
-                            industry=args.industry or job.get("industry"))
+                            industry=args.industry or job.get("industry"),
+                            role=args.role or job.get("role"),
+                            level=args.level or job.get("level", "mid"))
         out.append(r)
     out.sort(key=lambda r: -r.composite)          # sorting numbers, in code
     print(f"{'candidate':<18}{'score':>8}   status")
@@ -67,6 +70,7 @@ def main(argv=None):
     a = sub.add_parser("params", help="list the 50 parameters")
     a.add_argument("--family")
     a.add_argument("--industry")
+    a.add_argument("--role")
     a.set_defaults(fn=_params)
 
     b = sub.add_parser("score", help="score a folder of CVs")
@@ -74,7 +78,9 @@ def main(argv=None):
     b.add_argument("--cvs", required=True)
     b.add_argument("--json", help="write the full audit record here")
     b.add_argument("--today", help="YYYY-MM-DD, for reproducible date maths")
-    b.add_argument("--industry", help="activate an industry pack")
+    b.add_argument("--industry", help="what kind of company")
+    b.add_argument("--role", help="what the job is")
+    b.add_argument("--level", help="seniority: entry..c_level (reweights)")
     b.set_defaults(fn=_score)
 
     c = sub.add_parser("audit", help="shuffle audit on an existing tool")
