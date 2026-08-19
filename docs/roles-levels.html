@@ -1,20 +1,18 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Roles, levels and weights</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-:root{color-scheme:light;
- --bg:#fbfaf7;--card:#fff;--ink:#141310;--soft:#5a554e;--faint:#8b857c;--line:#e5e0d6;
- --b1:#cde2fb;--b2:#9ec5f4;--b3:#6da7ec;--b4:#3987e5;--b5:#2a78d6;--b6:#184f95;
- --acc:#2a78d6;--warm:#eb6834;}
-@media (prefers-color-scheme:dark){:root{
- --bg:#151412;--card:#1f1d1a;--ink:#f2ede4;--soft:#c0b9ae;--faint:#948d83;--line:#332f29;
- --b1:#184f95;--b2:#1c5cab;--b3:#256abf;--b4:#3987e5;--b5:#5598e7;--b6:#86b6ef;
- --acc:#3987e5;--warm:#e0855a;}}
+:root{color-scheme:dark;
+ --bg:#0E2B22;--card:#143A2E;--ink:#F2F6F1;--soft:#C0D2C6;--faint:#95AD9F;--line:#235C48;--font-head:'Instrument Serif',Georgia,'Times New Roman',serif;--font-body:'Geist',ui-sans-serif,-apple-system,'Segoe UI',Roboto,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+ --b1:#1C4335;--b2:#2A5B41;--b3:#4A7A46;--b4:#86934A;--b5:#B79A47;--b6:#D9A441;--acc:#D9A441;--warm:#E8886A;}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);
  font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
 .wrap{max-width:1100px;margin:0 auto;padding:38px 20px 80px}
-h1{font-size:1.95rem;line-height:1.15;margin:0 0 8px;letter-spacing:-.025em}
+h1{font-size:2.3rem;line-height:1.15;margin:0 0 8px;letter-spacing:-.025em}
 h2{font-size:1.3rem;margin:46px 0 5px;letter-spacing:-.018em}
 h3{font-size:1rem;margin:26px 0 8px;color:var(--soft);font-weight:700;
    text-transform:uppercase;letter-spacing:.08em;font-size:.75rem}
@@ -71,6 +69,21 @@ summary{cursor:pointer;font-size:.79rem;color:var(--acc);font-weight:600}
 .big .l{font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:7px}
 .big p{margin:0;font-size:1.02rem;line-height:1.55}
 .big p+p{margin-top:9px;font-size:.91rem;color:var(--soft)}
+
+/* ---- Oxford theme: typography + surface overrides ---- */
+body{font-family:var(--font-body);font-feature-settings:"cv05","ss01"}
+h1,h2{font-family:var(--font-head);font-weight:400}
+h1{letter-spacing:-.005em}
+h2{letter-spacing:0}
+.st .v,.dc .dv,.head .hn,.big .bv{font-family:var(--font-head);font-weight:400;letter-spacing:0}
+nav .nm,code,pre,th,.k,.cap,.in label{font-family:var(--font-mono)}
+.btn.p{background:var(--acc);color:#0E2B22;border-color:var(--acc)}
+.btn.p:hover{opacity:.88}
+pre{background:#071E17;color:#DDE8E0;border:1px solid var(--line)}
+.steps li::before{color:#0E2B22}
+::selection{background:var(--acc);color:#0E2B22}
+textarea::placeholder{color:#6E877A}
+a{text-decoration-color:color-mix(in srgb,var(--acc) 55%,transparent)}
 </style></head><body><div class="wrap">
 
 <h1>Roles, levels and weights</h1>

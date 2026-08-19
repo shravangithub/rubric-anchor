@@ -2,15 +2,13 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>rubric-anchor — measure candidates, don't rank them</title>
 <meta name="description" content="Open-source candidate scoring. 247 parameters across 12 company types, 14 roles and 9 levels. A score is a property of the candidate, not the batch.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-:root{color-scheme:light;
- --bg:#fbfaf7;--card:#fff;--ink:#141310;--soft:#524d46;--faint:#867f76;--line:#e4dfd5;
- --acc:#2a78d6;--accBg:#eaf2fd;--warm:#c8402c;--warmBg:#fdefec;--ok:#2c6f5b;--okBg:#e7f1ee;
- --b1:#cde2fb;--b2:#9ec5f4;--b3:#6da7ec;--b4:#3987e5;--b5:#2a78d6;--b6:#184f95}
-@media (prefers-color-scheme:dark){:root{
- --bg:#131211;--card:#1d1b19;--ink:#f1ece3;--soft:#bab3a8;--faint:#8f8880;--line:#312d28;
- --acc:#3987e5;--accBg:#12202e;--warm:#e0705c;--warmBg:#2a1714;--ok:#69c3a5;--okBg:#142320;
- --b1:#184f95;--b2:#1c5cab;--b3:#256abf;--b4:#3987e5;--b5:#5598e7;--b6:#86b6ef}}
+:root{color-scheme:dark;
+ --bg:#0E2B22;--card:#143A2E;--ink:#F2F6F1;--soft:#C0D2C6;--faint:#95AD9F;--line:#235C48;--font-head:'Instrument Serif',Georgia,'Times New Roman',serif;--font-body:'Geist',ui-sans-serif,-apple-system,'Segoe UI',Roboto,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+ --acc:#D9A441;--accBg:#2B2617;--warm:#E8886A;--warmBg:#33211A;--ok:#79C9A4;--okBg:#123A2C;--b1:#1C4335;--b2:#2A5B41;--b3:#4A7A46;--b4:#86934A;--b5:#B79A47;--b6:#D9A441;}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);
  font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
@@ -25,8 +23,8 @@ nav a:hover{color:var(--ink)}
 nav .gh{margin-left:auto;font-weight:700;color:var(--ink)}
 @media(max-width:760px){nav .hide{display:none}}
 header{padding:70px 0 42px}
-h1{font-size:3rem;line-height:1.05;margin:0 0 16px;letter-spacing:-.038em}
-@media(max-width:640px){h1{font-size:2.1rem}}
+h1{font-size:3.5rem;line-height:1.02;margin:0 0 16px;letter-spacing:-.038em}
+@media(max-width:640px){h1{font-size:2.4rem}}
 .tag{font-size:1.2rem;color:var(--soft);margin:0 0 14px;max-width:680px}
 .tag2{font-size:.98rem;color:var(--faint);margin:0 0 28px;max-width:660px}
 .cta{display:flex;gap:11px;flex-wrap:wrap;margin-bottom:38px}
@@ -88,6 +86,21 @@ footer{padding:44px 0 70px;font-size:.87rem;color:var(--faint);border-top:1px so
 footer a{color:var(--soft)}
 .pill{display:inline-block;font-size:.68rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;
  padding:2px 9px;border-radius:999px;background:var(--accBg);color:var(--acc);margin-left:7px;vertical-align:2px}
+
+/* ---- Oxford theme: typography + surface overrides ---- */
+body{font-family:var(--font-body);font-feature-settings:"cv05","ss01"}
+h1,h2{font-family:var(--font-head);font-weight:400}
+h1{letter-spacing:-.005em}
+h2{letter-spacing:0}
+.st .v,.dc .dv,.head .hn,.big .bv{font-family:var(--font-head);font-weight:400;letter-spacing:0}
+nav .nm,code,pre,th,.k,.cap,.in label{font-family:var(--font-mono)}
+.btn.p{background:var(--acc);color:#0E2B22;border-color:var(--acc)}
+.btn.p:hover{opacity:.88}
+pre{background:#071E17;color:#DDE8E0;border:1px solid var(--line)}
+.steps li::before{color:#0E2B22}
+::selection{background:var(--acc);color:#0E2B22}
+textarea::placeholder{color:#6E877A}
+a{text-decoration-color:color-mix(in srgb,var(--acc) 55%,transparent)}
 </style></head><body>
 
 <nav><div class="wrap">
@@ -301,6 +314,6 @@ document.getElementById('hm').innerHTML='<tr><th>Level</th>'+
      S.fams.map(function(f){var v=l.share[f]||0;
        var i=Math.min(5,Math.floor(v/mx*6));
        return '<td><div class="cell" style="background:'+(v<0.6?'transparent':SH[i])+';color:'+
-         (v/mx>0.55?'#fff':'var(--ink)')+'">'+v+'</div></td>';}).join('')+'</tr>';
+         (v/mx>0.55?'#0E2B22':'var(--ink)')+'">'+v+'</div></td>';}).join('')+'</tr>';
  }).join('');
 </script></body></html>
