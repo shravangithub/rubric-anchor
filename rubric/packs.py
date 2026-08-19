@@ -87,6 +87,8 @@ def _pack(prefix: str, family: str,
     return [_p(f"{prefix}_{k}", label, family, Kind.SCORED, how, w)
             for k, label, how, w in rows]
 
+#: IT services / consulting: delivering TO a client. For a captive centre
+#: owning its own charter, use the `gcc` pack instead -- the dynamics differ.
 SERVICES = _pack("svc", "services", [
     ("client_facing_exposure", "Direct client or stakeholder ownership", How.MODEL, .040),
     ("multi_engagement_range", "Delivered across several clients or accounts", How.MODEL, .030),
@@ -144,6 +146,8 @@ FINTECH = _pack("fin", "fintech", [
     ("licensing_awareness", "Understands the licence the product operates under", How.MODEL, .020),
 ])
 
+#: Applied AI/ML: shipping models into a product. For a research lab pushing
+#: the frontier, use `frontier_ai` -- different evidence entirely.
 AI_ML = _pack("ai", "ai", [
     ("model_lifecycle", "Train, evaluate, deploy, monitor, retrain", How.MODEL, .045),
     ("evaluation_rigour", "Held-out sets, baselines, honest metrics", How.MODEL, .045),
@@ -184,14 +188,38 @@ PHARMA = _pack("pha", "pharma", [
     ("documentation_discipline", "ALCOA+ data integrity practice", How.MODEL, .025),
 ])
 
+
+GCC = _pack("gcc", "gcc", [
+    ("charter_ownership", "Owned a capability charter, not just execution", How.MODEL, .045),
+    ("global_stakeholder_management", "Direct counterparts at the global HQ", How.MODEL, .040),
+    ("captive_build_out", "Built or scaled a function inside the centre", How.MODEL, .035),
+    ("vendor_to_captive_transition", "Moved work from vendor to in-house", How.MODEL, .030),
+    ("distributed_timezone_delivery", "Sustained follow-the-sun collaboration", How.MODEL, .025),
+    ("centre_talent_scaling", "Hired and grew teams locally", How.MODEL, .025),
+    ("value_shift_evidence", "Moved work up from cost arbitrage to ownership", How.MODEL, .030),
+])
+
+FRONTIER_AI = _pack("fai", "frontier_ai", [
+    ("research_publication", "Publications at top-tier venues", How.MODEL, .045),
+    ("novel_contribution", "Original method, architecture or result", How.MODEL, .050),
+    ("large_scale_training", "Trained or fine-tuned at significant scale", How.MODEL, .045),
+    ("distributed_training_systems", "Multi-node parallelism and training infra", How.MODEL, .040),
+    ("evaluation_design", "Designed evaluations, not merely ran them", How.MODEL, .035),
+    ("alignment_and_safety", "Safety, interpretability or red-team research", How.MODEL, .040),
+    ("open_source_impact", "Released models or tools with real adoption", How.MODEL, .030),
+    ("compute_efficiency", "Got more capability from less compute", How.MODEL, .030),
+])
+
 INDUSTRY_PACKS: dict[str, list[Parameter]] = {
     "services":   SERVICES,
+    "gcc":        GCC,
     "product":    PRODUCT,
     "saas":       SAAS,
     "paas":       PAAS,
     "ecommerce":  ECOMMERCE,
     "fintech":    FINTECH,
     "ai":         AI_ML,
+    "frontier_ai": FRONTIER_AI,
     "infra":      INFRA,
     "cybersec":   CYBERSEC,
     "pharma":     PHARMA,

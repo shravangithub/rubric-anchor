@@ -11,11 +11,28 @@ JOB = {"job_family_titles": ["engineer"], "min_total_years": 5,
 TODAY = date(2026, 8, 19)
 
 
-def test_ten_industry_packs():
-    assert len(packs.INDUSTRY_PACKS) == 10
+def test_twelve_industry_packs():
+    assert len(packs.INDUSTRY_PACKS) == 12
     assert set(packs.INDUSTRY_PACKS) == {
-        "services", "product", "saas", "paas", "ecommerce",
-        "fintech", "ai", "infra", "cybersec", "pharma"}
+        "services", "gcc", "product", "saas", "paas", "ecommerce",
+        "fintech", "ai", "frontier_ai", "infra", "cybersec", "pharma"}
+
+
+def test_gcc_is_distinct_from_services():
+    """A captive centre owns a charter; a services firm delivers to a client.
+    Conflating them loses the distinction that matters most in Indian hiring."""
+    svc = {p.key.split("_", 1)[1] for p in packs.INDUSTRY_PACKS["services"]}
+    gcc = {p.key.split("_", 1)[1] for p in packs.INDUSTRY_PACKS["gcc"]}
+    assert not (svc & gcc), "packs must not duplicate each other"
+    assert "charter_ownership" in gcc
+    assert "client_facing_exposure" in svc
+
+
+def test_frontier_ai_is_distinct_from_applied_ai():
+    ai = {p.key.split("_", 1)[1] for p in packs.INDUSTRY_PACKS["ai"]}
+    fai = {p.key.split("_", 1)[1] for p in packs.INDUSTRY_PACKS["frontier_ai"]}
+    assert not (ai & fai)
+    assert "novel_contribution" in fai and "research_publication" in fai
 
 
 def test_no_duplicate_keys_anywhere():
