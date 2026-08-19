@@ -63,6 +63,25 @@ def _audit(args):
     print(report(analyse(rankings, args.shortlist)))
 
 
+def _validate(args):
+    from .kg import PeopleGraph, Validity
+    g = PeopleGraph(args.db)
+    st = g.stats()
+    print(f"people {st['people']} | requisitions {st['requisitions']} | "
+          f"outcomes {st['outcomes']} | facts {st['facts']}\n")
+    rows = Validity(g, args.min_group).report()
+    if not rows:
+        sys.exit("no scored facts in this graph yet")
+    print(f"{'parameter':<30}{'n':>5}{'r(perf)':>9}{'sep':>7}  verdict")
+    print("-" * 82)
+    for v in rows:
+        r = "--" if v.r_performance is None else f"{v.r_performance:+.3f}"
+        sep = "--" if v.separation is None else f"{v.separation:+.1f}"
+        print(f"{v.parameter:<30}{v.n:>5}{r:>9}{sep:>7}  {v.verdict}")
+    print("\nSelection bias applies: performance data exists only for hires. "
+          "Trust strong positives; treat weak negatives as artefacts.")
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="rubric")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -87,6 +106,11 @@ def main(argv=None):
     c.add_argument("--rankings", required=True, help="JSON: list of ranked id lists")
     c.add_argument("--shortlist", type=int, required=True)
     c.set_defaults(fn=_audit)
+
+    d = sub.add_parser("validate", help="which parameters actually predicted?")
+    d.add_argument("--db", required=True, help="path to the people graph")
+    d.add_argument("--min-group", type=int, default=5)
+    d.set_defaults(fn=_validate)
 
     args = ap.parse_args(argv)
     args.fn(args)

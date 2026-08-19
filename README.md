@@ -170,28 +170,66 @@ dropped from the composite entirely rather than scored zero — they appear in
 
 ## The knowledge graph
 
-`rubric.Graph` stores everything as triples with provenance —
-`(subject) --[predicate]--> (object)` plus evidence, source and timestamp — in
-SQLite, so the repo runs with no database to install.
+`rubric.kg.PeopleGraph` is where scores stop being disposable. Every assessment
+becomes facts with provenance, in SQLite, with no database to install.
 
-Its purpose is **not** to screen anyone. It is to accumulate, across many
-requisitions, the record that answers the question no single requisition can:
-
-```python
-graph.parameter_separation(min_group=5)
-# → for each parameter, mean score of people who were hired vs rejected,
-#   and the gap between them. Cells below k are suppressed.
+```bash
+python -m rubric validate --db people.db
+python examples/kg_demo.py          # 400 simulated hires, planted ground truth
 ```
 
-Read that list from the bottom. A parameter with near-zero separation is not
-distinguishing anyone — it is costing candidates time and telling you nothing.
-You cannot see that from inside one requisition, and a system that ranks
-comparatively cannot see it at all, because its output was never durable enough
-to join to an outcome.
+**Bi-temporal.** Every fact carries `valid_from` (when it was true in the world)
+and `recorded_at` (when you learned it). Those differ constantly — a promotion
+effective in March, recorded in June — and conflating them makes audit answers
+wrong. `as_of(valid_on=…, known_on=…)` reconstructs what the system believed on
+any past date, which is the query you need when a decision is challenged a year
+later and your weights have since changed.
 
-Causal edges (`CAUSED_BY`, `PREDICTED`) are stored with
-`human_confirmed=False` by default. A model may propose a cause; it may not
-assert one.
+**Append-only, with logged merges.** Nothing is updated in place; corrections
+supersede. Identity merges use deterministic keys only — employee ID, verified
+email — and are logged with their basis, so they are reversible. Similar names
+are never sufficient evidence, and the module does not guess.
+
+**`Validity.report()` — the payoff.** For every parameter, two *different*
+questions:
+
+| | what it measures | trustworthy? |
+|---|---|---|
+| **separation** | did it distinguish who you hired from who you rejected | circular by construction — it measures your process |
+| **r(performance)** | did it predict who turned out good | the one that matters |
+
+A parameter can separate strongly and predict nothing. That is the failure this
+exists to surface: it means the parameter is driving decisions without earning
+it. In the simulation, the three planted predictive parameters come back at
+r = +0.52, +0.46, +0.38 — and the credential parameters that drove hiring but
+were generated independently of talent are flagged, not believed.
+
+**Selection bias — read before trusting any correlation.** Performance ratings
+exist only for people you *hired*. Among hires, a weak score on one criterion
+must have been offset by a strong one elsewhere, which manufactures spurious
+*negative* correlations between genuinely independent criteria (collider
+stratification). So: a strong positive r survived a headwind and is
+trustworthy; a weak negative r on a criterion your process rewards is very
+likely an artefact. `report()` returns `SUSPECT — likely selection artefact`
+rather than scoring those. Removing the bias properly needs performance data on
+people you did not hire, which you will never have.
+
+**`drop_one()` — counterfactual.** If this parameter had not existed, whose
+*outcome* would have changed? Measured as shortlist churn, not rank movement —
+an earlier version reported ~90% movement for every parameter, which was true
+and completely useless.
+
+**`explain()`** attributes a specific person's score to specific parameters,
+recovered from what was stored rather than recomputed from today's config.
+
+**`FairnessMonitor`** does adverse-impact screening on externally supplied
+aggregate counts. It has no access to per-person data and no path to one — a
+test asserts the class contains no query and no `person_id`. Groups below the
+minimum size are suppressed rather than reported. The four-fifths ratio is a
+screening heuristic, not a legal finding.
+
+Causal edges (`CAUSED_BY`, `PREDICTED`) store `human_confirmed=False` by
+default. A model may propose a cause; it may not assert one.
 
 ## Going live
 
@@ -268,7 +306,7 @@ for a new role is permitted in your jurisdiction.
 pip install -e ".[dev]" && pytest -q
 ```
 
-70 tests. They are the specification: if you change a rule, a test should fail
+79 tests. They are the specification: if you change a rule, a test should fail
 and you should have to write down why.
 
 Some of them exist to stop a well-meaning future change: `test_institution_tier_is_not_a_parameter`,
