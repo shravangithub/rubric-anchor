@@ -1,0 +1,26 @@
+{
+  "experiment": "llm-shuffle-stability",
+  "date": "2026-08-19",
+  "design": "Twelve synthetic senior-backend CVs of deliberately similar strength. Five independent LLM instances, each shown the same twelve CVs in a different order, each asked to rank all twelve. No instance could see any other.",
+  "model": "claude-opus-5 (subagent instances, default sampling)",
+  "orders": {
+    "1": "A B C D E F G H I J K L",
+    "2": "G J D L A F K C H B E I",
+    "3": "L K I H G F E D C B A J",
+    "4": "C F A I L D G B K J E H",
+    "5": "H E B K J G C L F D A I"
+  },
+  "rankings": {
+    "1": "A C J B H G D F I E K L",
+    "2": "A C J B H D E G F I K L",
+    "3": "A C J B H D F I K E G L",
+    "4": "A C J G H B D E F I K L",
+    "5": "A C J B G D F E H I K L"
+  },
+  "caveats": [
+    "CVs are synthetic. Real people's resumes were not used: they are identifiable individuals who did not consent to being ranked.",
+    "CVs were written to be close in strength. This is the hard case by construction; a pool with clearer separation shows less churn.",
+    "Separate instances vary in sampling as well as input order, so this measures TOTAL run-to-run instability, of which order is one component. Isolating order alone requires deterministic decoding with only sequence varying.",
+    "N=5 runs, one role, one pool of twelve. Directional, not definitive."
+  ]
+}

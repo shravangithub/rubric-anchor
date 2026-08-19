@@ -31,6 +31,15 @@ It evaporates when the pile changes. And when a rejected candidate asks why,
 there is no per-person record to point at — because the architecture has no
 slot for one.
 
+**We measured this on a real model.** Twelve synthetic senior-backend CVs of
+similar strength, five independent instances, each shown the same CVs in a
+different order. The top three and the bottom one never moved. One candidate
+placed **4th in one run and 11th in another** on an unchanged CV. Another sat
+at 5th for four consecutive runs — enough to look settled — then 9th.
+At a shortlist of five, **a quarter of the pool was unstable**.
+
+Method, data and caveats: [`experiments/shuffle_llm/`](experiments/shuffle_llm/).
+
 Run the audit on any existing tool and you can measure this yourself:
 
 ```
