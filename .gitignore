@@ -14,3 +14,11 @@ htmlcov/
 .idea/
 .vscode/
 out/
+
+# never commit credentials
+.env
+.env.*
+*.pem
+*.key
+secrets.*
+.netrc

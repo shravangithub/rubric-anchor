@@ -9,7 +9,7 @@ CV it came from — no quote, no score.
 A candidate's score is a property of *that candidate* — not of the batch they
 arrived in, the order the files were uploaded, or the day you ran it.
 
-### The 1-Minute Teaser
+### Watch the 53-second version
 
 [![Measure candidates. Don't rank them.](docs/media/film-poster.jpg)](https://shravangithub.github.io/rubric-anchor/#film)
 
@@ -27,6 +27,25 @@ python -m rubric score --job examples/job.json --cvs examples/resumes \
        --industry fintech --role backend --level senior
 python -m rubric audit --rankings examples/rankings.json --shortlist 4
 ```
+
+### A note on API keys
+
+The scoring engine needs no key and makes no network calls — a test asserts that
+neither `anthropic` nor `openai` is ever imported by the core package. If you
+choose to plug in a real model, `anthropic_adapter()` and `openai_adapter()`
+take the key as a function argument; nothing in this repository reads, stores,
+or logs one. Pass it from an environment variable in your own script:
+
+```python
+import os
+from rubric.llm import LLMExtractor, anthropic_adapter
+ex = LLMExtractor(anthropic_adapter(api_key=os.environ["ANTHROPIC_API_KEY"]))
+```
+
+Never hard-code a key into a file you commit. `.gitignore` already excludes
+`.env`, `*.pem` and `*.key` for you.
+
+---
 
 No API key. No external services. The runtime dependency list is empty — the
 package uses only the Python standard library, so it runs anywhere and its
