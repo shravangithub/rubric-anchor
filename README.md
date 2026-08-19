@@ -1,6 +1,10 @@
-# TalentRubric Rank
+# rubric-anchor
 
-**Absolute, evidence-anchored resume scoring. 247 parameters, ~80 active per role.**
+**Absolute, evidence-anchored candidate scoring.**
+*Measure candidates. Don't rank them.*
+
+247 parameters, ~80 active per requisition. Every score carries the line of the
+CV it came from — no quote, no score.
 
 A candidate's score is a property of *that candidate* — not of the batch they
 arrived in, the order the files were uploaded, or the day you ran it.

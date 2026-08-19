@@ -84,4 +84,4 @@ what order the files were in.
 ---
 
 *Method, data and analysis script:
-[experiments/shuffle_llm](https://github.com/YOURORG/talentrubric-rank/tree/main/experiments/shuffle_llm)*
+[experiments/shuffle_llm](https://github.com/YOURORG/rubric-anchor/tree/main/experiments/shuffle_llm)*

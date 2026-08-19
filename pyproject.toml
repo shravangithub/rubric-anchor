@@ -3,9 +3,9 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "talentrubric-rank"
+name = "rubric-anchor"
 version = "0.1.0"
-description = "Absolute, evidence-anchored resume scoring across 50 parameters. Scores are a property of the candidate, not of the batch."
+description = "Absolute, evidence-anchored candidate scoring. A score is a property of the candidate, not of the batch they arrived in."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
