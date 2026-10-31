@@ -15,6 +15,12 @@ from .roles import ROLE_PACKS
 from . import levels as LV
 from .evidence import Claim, verify, evidence_ratio
 from .guards import assert_no_protected_attributes, assert_single_candidate
+from .redact import redact
+from .injection import scan, flagged_lines, span_in_flagged
+from ._version import __version__
+
+#: Order of severity for `Result.decision`.
+DECISIONS = ("proceed", "review", "confirm_reject")
 
 
 @dataclass
@@ -37,6 +43,21 @@ class Result:
     #: candidates WITHIN one requisition.
     role_fit: float | None = None
     industry_fit: float | None = None
+    #: Facts the CV did not state. Unknown is not a fail: ask, don't reject.
+    unknowns: list[str] = field(default_factory=list)
+    #: proceed | review | confirm_reject. No path rejects without a person:
+    #: even a failed bona-fide gate only PROPOSES the rejection.
+    decision: str = "proceed"
+    #: Lines that looked like instructions to a model (see injection.py).
+    injection: list[dict] = field(default_factory=list)
+    #: Redaction counts per category -- never the removed values.
+    redaction: dict = field(default_factory=dict)
+    #: What produced this result: package, extractor, model, prompt version.
+    provenance: dict = field(default_factory=dict)
+
+    def _escalate(self, to: str) -> None:
+        if DECISIONS.index(to) > DECISIONS.index(self.decision):
+            self.decision = to
 
     def as_dict(self) -> dict:
         return {"candidate_id": self.candidate_id, "composite": self.composite,
@@ -44,6 +65,9 @@ class Result:
                 "needs_human": self.needs_human, "reasons": self.reasons,
                 "not_applicable": self.not_applicable,
                 "role_fit": self.role_fit, "industry_fit": self.industry_fit,
+                "decision": self.decision, "unknowns": self.unknowns,
+                "injection": self.injection, "redaction": self.redaction,
+                "provenance": self.provenance,
                 "dropped_claims": [c.as_dict() for c in self.dropped],
                 "audit": self.audit}
 
@@ -63,7 +87,10 @@ def score_candidate(candidate_id: str, resume: str, job: dict,
                     extractor, today: date | None = None,
                     industry: str | None = None,
                     role: str | None = None,
-                    level: str = "mid") -> Result:
+                    level: str = "mid",
+                    redact_pii: bool = True,
+                    names: tuple[str, ...] | list[str] = (),
+                    institutions: tuple[str, ...] | list[str] = ()) -> Result:
     """Score ONE candidate against the rubric.
 
     `industry`  what kind of company  -> adds a pack
@@ -73,11 +100,46 @@ def score_candidate(candidate_id: str, resume: str, job: dict,
     Same instrument at every level, weighted differently -- so a 62 at entry
     and a 62 at director both mean "met the bar for the level", and the
     difference between them is inspectable rather than hidden.
+
+    `redact_pii`  on by default. The model sees -- and every span is verified
+                  against -- the redacted text. Pass `names` / `institutions`
+                  to remove those too.
     """
     assert_single_candidate(resume)
     assert_no_protected_attributes(job, "the job spec")
     today = today or date.today()
     r = Result(candidate_id=candidate_id)
+    r.provenance = {
+        "package": __version__,
+        "extractor": type(extractor).__name__,
+        "model": getattr(extractor, "model_id", None),
+        "prompt_version": getattr(extractor, "prompt_version", None),
+        "redaction": redact_pii,
+        "industry": industry, "role": role, "level": level,
+        "today": today.isoformat(),
+    }
+
+    # ---- untrusted input: scan, then redact ------------------------------
+    findings = scan(resume)
+    if redact_pii:
+        resume, rep = redact(resume, names, institutions)
+        r.redaction = rep.as_dict()
+    flagged = flagged_lines(resume, findings)
+    r.injection = [f.as_dict() for f in findings]
+    if findings:
+        r.audit.append({"step": "injection_scan", "findings": len(findings)})
+
+    def _quarantine(kept_claims):
+        """Text written TO the scorer can never be evidence FOR the scorer."""
+        ok = []
+        for c in kept_claims:
+            if flagged and span_in_flagged(c.span, flagged):
+                c.verified = False
+                c.reason = "span is inside text flagged as a possible prompt injection"
+                r.dropped.append(c)
+            else:
+                ok.append(c)
+        return ok
 
     # ---- extract, then verify every span in CODE ------------------------
     emp = extractor.employment(resume)
@@ -86,7 +148,10 @@ def score_candidate(candidate_id: str, resume: str, job: dict,
     for k, v in elig.items():
         raw.append(Claim(k, v["value"], v["span"], 0.9))
     kept, dropped = verify(raw, resume)
-    r.kept, r.dropped = list(kept), list(dropped)
+    r.dropped = list(dropped)
+    kept = _quarantine(kept)
+    dropped = list(r.dropped)
+    r.kept = list(kept)
     r.audit.append({"step": "verify", "kept": len(kept), "dropped": len(dropped)})
 
     ver_emp = [c.value for c in kept if c.parameter == "employment"]
@@ -97,8 +162,16 @@ def score_candidate(candidate_id: str, resume: str, job: dict,
     fam = job.get("job_family_titles", [])
     rel_m = sum(months_between(e["start"], e["end"], today) for e in ver_emp
                 if any(t.lower() in e["title"].lower() for t in fam))
+    # Unknown is not a fail. A CV that does not mention work authorisation
+    # has not said "no" -- ask the candidate (see notice.questions_for).
+    for k in ("work_authorization", "notice_period_days"):
+        if ver.get(k) is None:
+            r.unknowns.append(k)
+    if "work_authorization" in r.unknowns:
+        r.reasons.append("work authorisation not stated in the CV - ask, don't reject")
     r.gates = {
-        "work_authorization":     bool(ver.get("work_authorization", False)),
+        "work_authorization":     (True if ver.get("work_authorization") is None
+                                   else bool(ver["work_authorization"])),
         "location_eligible":      job.get("location_required") is None,
         "notice_period_acceptable": (ver.get("notice_period_days") is None
                                      or ver["notice_period_days"] <= job.get("max_notice_days", 10**6)),
@@ -145,6 +218,11 @@ def score_candidate(candidate_id: str, resume: str, job: dict,
                   if p.how is P.How.MODEL and p.key not in r.scores]
     mclaims = [extractor.score_parameter(k, resume, job) for k in model_keys]
     mkept, mdropped = verify(mclaims, resume)
+    before = len(r.dropped)
+    mkept = _quarantine(mkept)
+    for c in r.dropped[before:]:
+        mdropped.append(c)
+        r.dropped.remove(c)
     for c in mkept:
         r.scores[c.parameter] = float(c.value)
     for c in mdropped:
@@ -191,15 +269,29 @@ def score_candidate(candidate_id: str, resume: str, job: dict,
     # ---- policy ----------------------------------------------------------
     failed = [k for k, ok in r.gates.items() if not ok]
     non_auto = [k for k in failed if not P.BY_KEY[k].bona_fide]
+    bona = [k for k in failed if k not in non_auto]
     if non_auto:
         r.needs_human = True
+        r._escalate("review")
         r.reasons.append(
             f"failed non-bona-fide gate(s) {non_auto} - a person must decide")
-    elif failed:
-        r.reasons.append(f"failed bona-fide gate(s) {failed}")
+    if bona:
+        # Hold-and-confirm. A bona-fide gate may PROPOSE a rejection, but a
+        # person confirms it before anything reaches the candidate.
+        r.needs_human = True
+        r._escalate("confirm_reject")
+        r.reasons.append(f"failed bona-fide gate(s) {bona} - rejection proposed; "
+                         f"a person confirms before anything is sent")
     if ratio < 0.7:
         r.needs_human = True
+        r._escalate("review")
         r.reasons.append(f"only {ratio:.0%} of claims carried usable evidence")
+    if findings:
+        r.needs_human = True
+        r._escalate("review")
+        lines_ = sorted({f.line for f in findings})
+        r.reasons.append(f"possible prompt-injection text on line(s) {lines_} - "
+                         f"a person checks before these scores are trusted")
     r.audit.append({"step": "policy", "gates_failed": failed,
-                    "needs_human": r.needs_human})
+                    "needs_human": r.needs_human, "decision": r.decision})
     return r

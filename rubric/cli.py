@@ -3,6 +3,7 @@
     python -m rubric params                     list the 50 parameters
     python -m rubric score --job J --cvs DIR    score a folder of CVs
     python -m rubric audit --rankings FILE      run the shuffle audit
+    python -m rubric scan --cvs DIR             injection + redaction check, no scoring
 """
 from __future__ import annotations
 import argparse, glob, json, os, sys
@@ -50,12 +51,35 @@ def _score(args):
     out.sort(key=lambda r: -r.composite)          # sorting numbers, in code
     print(f"{'candidate':<18}{'score':>8}   status")
     print("-" * 60)
+    label = {"proceed": "scored", "review": "REVIEW",
+             "confirm_reject": "CONFIRM REJECTION"}
     for r in out:
-        st = "REVIEW - " + r.reasons[0] if r.needs_human else "scored"
+        st = label[r.decision] + (" - " + r.reasons[-1] if r.needs_human else "")
+        if r.unknowns and not r.needs_human:
+            st += f" (ask: {', '.join(r.unknowns)})"
         print(f"{r.candidate_id:<18}{r.composite:>8.2f}   {st}")
     if args.json:
         json.dump([r.as_dict() for r in out], open(args.json, "w"), indent=2)
         print(f"\nfull audit record written to {args.json}")
+
+
+def _scan(args):
+    from .injection import scan
+    from .redact import redact
+    files = sorted(glob.glob(os.path.join(args.cvs, "*.txt")))
+    if not files:
+        sys.exit(f"no .txt CVs found in {args.cvs}")
+    flagged = 0
+    print(f"{'file':<34}{'redacted':>9}   injection")
+    print("-" * 70)
+    for f in files:
+        text = open(f).read()
+        _, rep = redact(text)
+        found = scan(text)
+        flagged += bool(found)
+        inj = "; ".join(f"line {x.line}: {x.kind}" for x in found) or "none"
+        print(f"{os.path.basename(f):<34}{rep.total:>9}   {inj}")
+    print(f"\n{flagged} of {len(files)} CV(s) flagged for a person to check.")
 
 
 def _audit(args):
@@ -106,6 +130,10 @@ def main(argv=None):
     c.add_argument("--rankings", required=True, help="JSON: list of ranked id lists")
     c.add_argument("--shortlist", type=int, required=True)
     c.set_defaults(fn=_audit)
+
+    e = sub.add_parser("scan", help="injection + redaction check on a folder")
+    e.add_argument("--cvs", required=True)
+    e.set_defaults(fn=_scan)
 
     d = sub.add_parser("validate", help="which parameters actually predicted?")
     d.add_argument("--db", required=True, help="path to the people graph")

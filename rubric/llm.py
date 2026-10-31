@@ -16,6 +16,7 @@ Contract, enforced downstream by `evidence.verify`:
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from typing import Callable, Protocol
@@ -108,6 +109,15 @@ CV:
 ---"""
 
 
+def prompt_version() -> str:
+    """Short hash of every prompt template. Changes whenever a prompt changes,
+    so each Result records exactly which wording produced it."""
+    h = hashlib.sha256()
+    for p in (EMPLOYMENT_PROMPT, ELIGIBILITY_PROMPT, SCORE_PROMPT):
+        h.update(p.encode())
+    return "p-" + h.hexdigest()[:12]
+
+
 def _json(text: str, default):
     """Providers wrap JSON in prose or fences more often than they should."""
     if not text:
@@ -132,8 +142,11 @@ class LLMExtractor:
     """Implements the `Extractor` protocol against any completion callable."""
 
     def __init__(self, complete: Complete, *, definitions: dict[str, str] | None = None,
-                 max_retries: int = 2):
+                 max_retries: int = 2, model_id: str | None = None):
         self.complete = complete
+        #: Recorded in every Result.provenance. Adapters set `complete.model`.
+        self.model_id = model_id or getattr(complete, "model", None)
+        self.prompt_version = prompt_version()
         self.definitions = definitions or {}
         self.max_retries = max_retries
         self._label_cache: dict[str, tuple[str, str]] = {}
@@ -219,7 +232,7 @@ class LLMExtractor:
 # Adapters. Thin by design -- the package must not depend on any SDK.
 # ---------------------------------------------------------------------------
 
-def anthropic_adapter(api_key: str, model: str = "claude-sonnet-4-5",
+def anthropic_adapter(api_key: str, model: str = "claude-sonnet-5-5",
                       max_tokens: int = 1024, temperature: float = 0.0) -> Complete:
     """Requires `pip install anthropic`. Imported lazily, never at package load."""
     import anthropic
@@ -230,6 +243,7 @@ def anthropic_adapter(api_key: str, model: str = "claude-sonnet-4-5",
                                    temperature=temperature,
                                    messages=[{"role": "user", "content": prompt}])
         return "".join(b.text for b in r.content if getattr(b, "type", "") == "text")
+    complete.model = model
     return complete
 
 
@@ -245,6 +259,7 @@ def openai_adapter(api_key: str, model: str = "gpt-4o-mini",
             model=model, max_tokens=max_tokens, temperature=temperature,
             messages=[{"role": "user", "content": prompt}])
         return r.choices[0].message.content or ""
+    complete.model = model
     return complete
 
 

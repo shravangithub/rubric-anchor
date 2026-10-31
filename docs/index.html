@@ -181,7 +181,7 @@ video.film{width:100%;aspect-ratio:16/9;display:block;border-radius:16px;
       <p>Every model claim must carry a span copied character-for-character from the CV, checked by substring in code. Paraphrase it and the claim is dropped.</p>
       <div class="n">Hallucination becomes a string comparison rather than a judgement call.</div></div>
     <div class="c"><h3>A person makes the adverse call</h3>
-      <p>Only two of eight gates may auto-reject — work authorisation and a legally required licence. Everything else, education included, routes to a human.</p>
+      <p>Only two of eight gates may propose a rejection — work authorisation and a legally required licence — and a person confirms it with one click. If the CV doesn't say, that's an Unknown to ask about, never a fail.</p>
       <div class="n">The machine narrows the pool; a person says no.</div></div>
   </div>
 </div></section>
@@ -244,9 +244,10 @@ video.film{width:100%;aspect-ratio:16/9;display:block;border-radius:16px;
     <li><b>Parse the requirements once</b><span>The JD becomes testable requirements with weights and gate types. A human approves this before any CV is read.</span></li>
     <li><b>Pull claims with evidence</b><span>Each fact extracted carries the exact line of the CV it came from.</span></li>
     <li><b>Verify in code</b><span>Substring check against the source. A claim whose quote isn't verbatim is dropped before it can influence anything.</span></li>
-    <li><b>Redact, then compute the gates</b><span>Name, institution and pronouns stripped. Years of experience calculated from dates — 22 parameters never touch a model.</span></li>
+    <li><b>Scan, redact, then compute the gates</b><span>Lines written to the model ("ignore previous instructions…") are flagged and can never be evidence. Name, contact details, pronouns and any institutions you list are stripped before the model reads anything. Years of experience calculated from dates — 22 parameters never touch a model.</span></li>
     <li><b>Score each parameter in isolation</b><span>No candidate is compared to any other. Order and batch size become irrelevant.</span></li>
-    <li><b>Sort the numbers, then a recruiter decides</b><span>With the audit record attached: every value, what produced it, and every claim dropped.</span></li>
+    <li><b>Score again, then band — don't rank</b><span>Each CV is scored several times, still alone. Anyone whose range straddles the cut-off is borderline, and a person decides.</span></li>
+    <li><b>A recruiter decides</b><span>With the audit record attached: every value, the model and prompt version that produced it, and every claim dropped.</span></li>
   </ol>
   <pre>pip install -e .
 
@@ -290,7 +291,7 @@ python -m rubric validate --db people.db</pre>
 </div></section>
 
 <footer><div class="wrap">
-  <p><b>rubric-anchor</b> — MIT licensed · 247 parameters · 87 tests · no runtime dependencies<br>
+  <p><b>rubric-anchor</b> — MIT licensed · 247 parameters · 109 tests · no runtime dependencies<br>
   Built by <a href="https://github.com/shravangithub">Shravan</a> at TalentRubric Growth Advisors.</p>
   <p style="margin-top:14px"><a href="https://github.com/shravangithub/rubric-anchor">GitHub</a> ·
   <a href="https://github.com/shravangithub/rubric-anchor/tree/master/experiments/shuffle_llm">The experiment</a> ·
@@ -305,7 +306,7 @@ var S={"core": [{"f": "eligibility", "n": 8, "code": 8, "w": 0.0, "top": ["Autho
 document.getElementById('stats').innerHTML=[
  [S.total,"parameters defined"],[S.active,"active per requisition"],
  [S.combos.toLocaleString(),"possible configurations"],[S.code,"computed in code, no model"],
- ["87","tests, no API key needed"]
+ ["109","tests, no API key needed"]
 ].map(function(x){return '<div class="st"><div class="v">'+x[0]+'</div><div class="l">'+x[1]+'</div></div>';}).join('');
 
 document.getElementById('core').innerHTML=S.core.map(function(f){

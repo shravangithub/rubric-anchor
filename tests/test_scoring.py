@@ -74,11 +74,17 @@ def test_failing_a_non_bona_fide_gate_routes_to_a_human():
     assert "person must decide" in " ".join(r.reasons)
 
 
-def test_missing_work_authorisation_is_the_one_auto_reject():
+def test_failed_work_authorisation_proposes_rejection_and_a_person_confirms():
+    """v0.2: hold-and-confirm. A bona-fide gate may PROPOSE a rejection, but no
+    path closes an application without a person. Automated-decision rules
+    increasingly require human review with the authority to change the
+    outcome; one click from a person costs nothing and removes the exposure."""
     r = score(cv=CV.replace("Authorized to work in India.",
                             "Not authorized; requires sponsorship."))
     assert r.gates["work_authorization"] is False
-    assert r.needs_human is False          # bona fide -> may close without a human
+    assert r.needs_human is True
+    assert r.decision == "confirm_reject"
+    assert "a person confirms" in " ".join(r.reasons)
 
 
 def test_protected_attribute_in_job_spec_raises():
