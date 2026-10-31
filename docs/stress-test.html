@@ -8,7 +8,7 @@
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
 <style>
 :root{color-scheme:light;
  --bg:#ffffff;--card:#ffffff;--ink:#232323;--soft:#4a4a4a;--faint:#7d7d7d;--line:#e6e6e6;--font-head:'Instrument Serif',Georgia,'Times New Roman',serif;--font-body:'Geist',ui-sans-serif,-apple-system,'Segoe UI',Roboto,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
@@ -91,10 +91,52 @@ a{text-decoration-color:color-mix(in srgb,var(--acc) 45%,transparent)}
 .brandbar img{height:20px;width:auto;display:block}
 .brandbar span{font-family:ui-monospace,Menlo,monospace;font-size:.74rem;color:var(--faint)}
 .brandbar:hover span{color:var(--ink)}
+
+/* ---- C3 theme (matches index.html) ---- */
+:root{--bg:#EEF1F5;--card:#FFFFFF;--ink:#172033;--soft:#3D4760;--faint:#5A667D;--line:#D8DEE7;
+ --font-head:'Archivo',ui-sans-serif,-apple-system,'Segoe UI',Roboto,sans-serif;--font-body:'Archivo',ui-sans-serif,-apple-system,'Segoe UI',Roboto,sans-serif;--font-mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+ --red:#C92A2A;--redBg:#FCEDEC;--teal:#1F7A6E;--tealBg:#E3F1EE;--navy:#26324B;--navyBg:#E4E8F0;--acc:#1F7A6E;--warm:#C92A2A;
+ --b1:#E3F1EE;--b2:#BFE0D9;--b3:#8CC6BA;--b4:#55A797;--b5:#2D8A7A;--b6:#1F6B5F;
+ --code:#1F7A6E;--codeBg:#E3F1EE;--model:#26324B;--modelBg:#E4E8F0;--gate:#C92A2A;--gateBg:#FCEDEC;--warn:#C92A2A;
+ --in:#1F7A6E;--inBg:#E3F1EE;--un:#C92A2A;--unBg:#FCEDEC;--out:#8A94A6;--outBg:#F4F6F9}
+body{background:var(--bg);color:var(--ink);font:400 16.5px/1.6 var(--font-body)}
+.wrap{max-width:1200px;padding:56px 40px 88px}
+@media(max-width:640px){.wrap{padding:36px 16px 64px}}
+:focus-visible{outline:3px solid var(--teal);outline-offset:2px;border-radius:4px}
+::selection{background:var(--ink);color:#fff}
+a{color:var(--ink);text-decoration-color:#E23B3B;text-underline-offset:3px}
+h1,h2,h3{font-family:var(--font-head)}
+h1{font-weight:850;font-stretch:72%;font-size:clamp(46px,7vw,84px);line-height:.92;letter-spacing:-.01em;margin:0 0 16px;max-width:16ch}
+h2{font-weight:800;font-stretch:82%;letter-spacing:0}
+h3{text-transform:none;letter-spacing:0}
+.st .v,.dc .dv,.head .hn,.big .bv{font-family:var(--font-head);font-weight:850;font-stretch:72%}
+th,.k,.cap,.in label,.dc .dt,.rw .tg,.hm-t th,.big .l,h3{font-family:var(--font-body);text-transform:none;letter-spacing:0}
+.lede,.sub{font-size:18px;color:var(--soft);max-width:64ch}
+.card,.c,.r,.fam,.dc{background:var(--card);border:0;box-shadow:none}
+.card{border-radius:18px;padding:24px 26px}
+.fam{box-shadow:inset 0 0 0 1.5px transparent}.fam:hover{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.dc.hl{box-shadow:inset 0 0 0 2px var(--teal)}
+summary{color:var(--ink);text-decoration:underline;text-decoration-color:#E23B3B;text-underline-offset:3px}
+.pill{border-radius:6px}
+.btn{border-radius:8px;font-family:var(--font-body)}
+.btn.p{background:var(--ink);border-color:var(--ink);color:#fff}
+textarea,input[type=number]{background:#fff;border-color:var(--line)}
+textarea{font-family:var(--font-mono)}
+pre{background:var(--ink);color:#E8ECF3}
+nav.top{position:sticky;top:0;z-index:30;background:rgba(238,241,245,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line)}
+nav.top .in{max-width:1200px;margin:0 auto;padding:0 40px;display:flex;align-items:center;gap:26px;height:64px;overflow-x:auto;scrollbar-width:none}
+nav.top .in::-webkit-scrollbar{display:none}
+nav.top img{height:20px;width:auto;display:block}
+nav.top a{font-size:14px;color:var(--soft);text-decoration:none;white-space:nowrap}
+nav.top a:hover,nav.top a[aria-current]{color:var(--ink)}
+nav.top a[aria-current]{font-weight:700}
+nav.top .gh{margin-left:auto;font-weight:700;color:var(--ink)}
+@media(max-width:640px){nav.top .in{padding:0 16px;gap:18px}nav.top .gh{margin-left:0}}
 </style>
 </head>
-<body><div class="wrap">
-<a class="brandbar" href="index.html"><img src="media/talentrubric-logo-dark.png" alt="TalentRubric"><span>&larr; back to the overview</span></a>
+<body>
+<nav class="top"><div class="in"><a href="index.html"><img src="media/talentrubric-logo-dark.png" alt="TalentRubric home"></a><a href="index.html">Overview</a><a href="company-types.html">Parameters</a><a href="roles-levels.html">Roles and levels</a><a href="stress-test.html" aria-current="page">Stress test</a><a class="gh" href="https://github.com/shravangithub/rubric-anchor">GitHub</a></div></nav>
+<div class="wrap">
 
 
 <h1>Shortlist Stress Test</h1>

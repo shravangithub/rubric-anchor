@@ -1,128 +1,129 @@
 <!DOCTYPE html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>TalentRubric — measure candidates, don't rank them</title>
+<title>rubric-anchor — measure candidates, don't rank them</title>
 <meta name="description" content="Open-source candidate scoring. 247 parameters across 12 company types, 14 roles and 9 levels. A score is a property of the candidate, not the batch.">
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
 <style>
 :root{color-scheme:light;
- --bg:#ffffff;--card:#ffffff;--ink:#232323;--soft:#4a4a4a;--faint:#7d7d7d;--line:#e6e6e6;--font-head:'Instrument Serif',Georgia,'Times New Roman',serif;--font-body:'Geist',ui-sans-serif,-apple-system,'Segoe UI',Roboto,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
- --acc:#c41e30;--accBg:#fdf1f3;--warm:#c41e30;--warmBg:#fdf1f3;--ok:#1f6f52;--okBg:#eff6f3;--b1:#fceff1;--b2:#f0c2c8;--b3:#e59aa4;--b4:#d96e7d;--b5:#ce4759;--b6:#c41e30;}
+ --bg:#EEF1F5;--card:#FFFFFF;--ink:#172033;--soft:#3D4760;--faint:#5A667D;--line:#D8DEE7;
+ --red:#C92A2A;--redLine:#E23B3B;--redBg:#FCEDEC;--teal:#1F7A6E;--tealBg:#E3F1EE;--grey:#A3ADBC;
+ --font:'Archivo',ui-sans-serif,-apple-system,'Segoe UI',Roboto,sans-serif;
+ --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+ --t1:#E3F1EE;--t2:#BFE0D9;--t3:#8CC6BA;--t4:#55A797;--t5:#2D8A7A;--t6:#1F6B5F}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);
- font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
-a{color:var(--acc)}
-.wrap{max-width:1000px;margin:0 auto;padding:0 20px}
-nav{border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:30;
- backdrop-filter:saturate(180%) blur(8px)}
-nav .wrap{display:flex;align-items:center;gap:15px;padding:12px 20px;flex-wrap:nowrap;overflow:hidden}
-nav .brand{display:flex;align-items:center;gap:11px;text-decoration:none;flex-shrink:0}
+html{scroll-padding-top:72px}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.6 var(--font);font-stretch:100%;-webkit-font-smoothing:antialiased}
+a{color:var(--ink);text-decoration-color:var(--redLine);text-underline-offset:3px}
+a:hover{color:var(--red)}
+:focus-visible{outline:3px solid var(--teal);outline-offset:2px;border-radius:4px}
+::selection{background:var(--ink);color:#fff}
+.wrap{max-width:1200px;margin:0 auto;padding:0 40px}
+@media(max-width:640px){.wrap{padding:0 16px}}
+
+nav{position:sticky;top:0;z-index:30;background:rgba(238,241,245,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;align-items:center;gap:26px;height:64px;overflow-x:auto;scrollbar-width:none}
+nav .wrap::-webkit-scrollbar{display:none}
+nav .brand{display:flex;align-items:center;gap:12px;text-decoration:none;flex-shrink:0}
 nav .brand img{height:20px;width:auto;display:block}
-nav .repo{font-family:ui-monospace,Menlo,monospace;font-size:.72rem;color:var(--faint);
- border:1px solid var(--line);border-radius:6px;padding:2px 7px;letter-spacing:-.01em}
-@media(max-width:1180px){nav .repo{display:none}}
-nav a{font-size:.82rem;color:var(--soft);text-decoration:none;white-space:nowrap}
+nav .repo{font-size:13px;font-weight:600;color:var(--faint);padding-left:12px;border-left:1px solid var(--line)}
+nav a{font-size:14px;color:var(--soft);text-decoration:none;white-space:nowrap}
 nav a:hover{color:var(--ink)}
 nav .gh{margin-left:auto;font-weight:700;color:var(--ink)}
-@media(max-width:760px){nav .hide{display:none}}
-@media(max-width:560px){nav .wrap{overflow-x:auto;scrollbar-width:none}nav .wrap::-webkit-scrollbar{display:none}nav .gh{margin-left:0}}
-.tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
-header{padding:70px 0 42px}
-h1{font-size:3.5rem;line-height:1.02;margin:0 0 16px;letter-spacing:-.038em}
-@media(max-width:640px){h1{font-size:2.4rem}}
-.tag{font-size:1.2rem;color:var(--soft);margin:0 0 14px;max-width:680px}
-.tag2{font-size:.98rem;color:var(--faint);margin:0 0 28px;max-width:660px}
-.cta{display:flex;gap:11px;flex-wrap:wrap;margin-bottom:38px}
-.btn{display:inline-block;padding:12px 24px;border-radius:999px;text-decoration:none;
- font-weight:700;font-size:.9rem;border:1.5px solid var(--line);color:var(--ink);background:var(--card)}
-.btn.p{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.btn:hover{opacity:.87}
-.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding-bottom:12px}
-@media(max-width:800px){.stats{grid-template-columns:repeat(2,1fr)}}
-.st{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:15px 16px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-.st .v{font-size:1.75rem;font-weight:800;letter-spacing:-.032em;line-height:1.1}
-.st .l{font-size:.76rem;color:var(--faint);margin-top:3px;line-height:1.35}
-section{padding:54px 0;border-top:1px solid var(--line)}
-h2{font-size:1.7rem;margin:0 0 8px;letter-spacing:-.026em}
-.sub{color:var(--soft);margin:0 0 26px;max-width:700px}
-.k{font-size:.7rem;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--acc);margin-bottom:9px}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-@media(max-width:860px){.grid3,.grid4{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}}
-@media(max-width:560px){.grid3,.grid4{grid-template-columns:1fr}}
-.c{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-.c h3{margin:0 0 6px;font-size:1rem;letter-spacing:-.012em}
-.c p{margin:0;font-size:.89rem;color:var(--soft);line-height:1.55}
-.c .n{font-size:.71rem;color:var(--faint);margin-top:9px;padding-top:9px;border-top:1px solid var(--line)}
-.c ul{margin:9px 0 0;padding-left:0;list-style:none}
-.c li{font-size:.79rem;color:var(--soft);padding:2.5px 0;display:flex;justify-content:space-between;gap:10px}
-.c li b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums;font-size:.74rem}
-.evi{background:var(--warmBg);border:1.5px solid var(--warm);border-radius:17px;padding:26px 29px}
-table{width:100%;border-collapse:collapse;font-size:.89rem;background:var(--card);border-radius:11px;overflow:hidden}
-th,td{padding:9px 11px;border-bottom:1px solid var(--line);text-align:center}
+@media(max-width:1100px){nav .repo,nav .hide{display:none}}
+@media(max-width:640px){nav .wrap{gap:18px}nav .gh{margin-left:0}}
+
+h1,h2,h3{font-family:var(--font)}
+h1{font-weight:850;font-stretch:72%;font-size:clamp(56px,9.2vw,112px);line-height:.9;letter-spacing:-.01em;margin:0 0 22px;max-width:14ch}
+h2{font-weight:800;font-stretch:80%;font-size:clamp(34px,4.4vw,48px);line-height:1;letter-spacing:-.005em;margin:0 0 14px;max-width:28ch}
+h3{font-weight:700;font-size:18px;line-height:1.3;margin:0 0 6px}
+header{padding:64px 0 0}
+.lede{font-size:19px;color:var(--soft);max-width:58ch;margin:0 0 28px}
+.cta{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:44px}
+.btn{display:inline-block;padding:13px 22px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.btn.p{background:var(--ink);color:#fff;box-shadow:none}
+.btn:hover{color:inherit;background:#fff}.btn.p:hover{background:#26324b;color:#fff}
+
+.panel{background:var(--card);border-radius:20px;padding:30px 34px 26px;display:grid;grid-template-columns:1.5fr 1fr;gap:44px}
+.panel h3{font-size:16px;margin:0 0 4px}
+.panel .cap{margin:0 0 14px;font-size:14.5px;color:var(--faint)}
+.panel svg{display:block;width:100%;height:auto}
+.panel svg text{font-family:var(--font)}
+.key{font-size:13.5px;color:var(--faint);margin-top:10px;display:flex;flex-wrap:wrap;gap:6px 16px}
+.key i{display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:6px;border-radius:2px}
+.key i.dash{height:0;border-top:2px dashed var(--ink);border-radius:0}
+.finding{grid-column:1/-1;border-top:1px solid var(--line);padding-top:18px;font-size:15.5px;color:var(--soft);max-width:none}
+.finding p{margin:0 0 6px;max-width:92ch}
+@media(max-width:900px){.panel{grid-template-columns:1fr;padding:22px 18px;gap:30px}}
+.chartscroll{overflow-x:auto}.panel>div{min-width:0}@media(max-width:600px){.chartscroll svg{min-width:500px}#flat{max-width:300px}}
+
+.stats{display:grid;grid-template-columns:repeat(5,1fr);margin:28px 0 0;border-top:2px solid var(--ink)}
+.st{padding:14px 18px 6px 0}
+.st+.st{padding-left:18px;border-left:1px solid var(--line)}
+.st .v{font-weight:850;font-stretch:72%;font-size:44px;line-height:1}
+.st .l{font-size:13.5px;color:var(--faint);margin-top:4px;line-height:1.35}
+@media(max-width:800px){.stats{grid-template-columns:repeat(2,1fr)}.st,.st+.st{padding:14px 12px 10px 0;border-left:0;border-bottom:1px solid var(--line)}}
+
+section{padding:88px 0 0}
+.sub{color:var(--soft);margin:0 0 30px;max-width:64ch}
+.ver{display:inline-block;font-size:13.5px;font-weight:700;color:var(--red);background:var(--redBg);border-radius:6px;padding:3px 9px;margin:0 0 14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+@media(max-width:900px){.grid3,.grid4{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}}
+@media(max-width:600px){.grid3,.grid4{grid-template-columns:1fr}}
+.c{background:var(--card);border-radius:14px;padding:22px 22px 20px}
+.c p{margin:0;font-size:15.5px;color:var(--soft);line-height:1.55}
+.c .n{font-size:13.5px;color:var(--faint);margin-top:12px;padding-top:11px;border-top:1px solid var(--line)}
+.c ul{margin:10px 0 0;padding:0;list-style:none}
+.c li{font-size:14px;color:var(--soft);padding:4px 0;display:flex;justify-content:space-between;gap:12px;border-top:1px solid #EEF1F5}
+.c li:first-child{border-top:0}
+.c li b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.pill{display:inline-block;font-size:12.5px;font-weight:700;padding:1px 8px;border-radius:6px;background:var(--bg);color:var(--soft);margin-left:6px;vertical-align:2px}
+.group{font-size:15px;font-weight:700;color:var(--faint);margin:30px 0 12px}
+.subhead{font-size:20px;font-weight:800;font-stretch:85%;margin:8px 0 14px}
+
+video.film{width:100%;aspect-ratio:16/9;display:block;border-radius:20px;background:#dfe4eb}
+
+.hm{overflow-x:auto;background:var(--card);border-radius:14px;padding:8px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+.hm table{min-width:780px}
+th,td{padding:8px 8px;text-align:center;border-bottom:1px solid #EEF1F5}
+th{font-size:12.5px;font-weight:700;color:var(--faint);text-transform:none}
 th:first-child,td:first-child{text-align:left;font-weight:700}
-th{font-size:.66rem;text-transform:uppercase;letter-spacing:.07em;color:var(--faint);font-weight:700}
 td{font-variant-numeric:tabular-nums}
-tr.hot td{color:var(--warm);font-weight:700}
-.hm{overflow-x:auto}
-.hm table{min-width:760px}
-.cell{height:30px;border-radius:5px;display:flex;align-items:center;justify-content:center;
- font-weight:700;font-size:.73rem;margin:1.5px}
-.steps{counter-reset:s;list-style:none;padding:0;margin:0}
-.steps li{counter-increment:s;position:relative;padding-left:46px;margin-bottom:18px}
-.steps li::before{content:counter(s);position:absolute;left:0;top:0;width:30px;height:30px;
- border-radius:50%;background:var(--acc);color:#fff;display:grid;place-items:center;font-size:.82rem;font-weight:800}
+.cell{height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;margin:1px}
+
+.steps{counter-reset:s;list-style:none;padding:0;margin:0 0 30px;display:grid;grid-template-columns:repeat(2,1fr);gap:0 40px}
+.steps li{counter-increment:s;position:relative;padding:16px 0 16px 56px;border-top:1px solid var(--line)}
+.steps li::before{content:counter(s);position:absolute;left:0;top:10px;font-weight:850;font-stretch:72%;font-size:38px;line-height:1;color:var(--ink)}
 .steps b{display:block;margin-bottom:2px}
-.steps span{font-size:.9rem;color:var(--soft)}
-.d{display:block;background:var(--card);border:1.5px solid var(--line);border-radius:14px;
- padding:19px 21px;text-decoration:none;color:inherit;transition:.15s}
-.d:hover{border-color:var(--acc);transform:translateY(-2px)}
-.d .t{font-weight:800;font-size:1rem;margin-bottom:5px}
-.d .s{font-size:.86rem;color:var(--soft);line-height:1.5}
-.d .go{font-size:.77rem;color:var(--acc);font-weight:700;margin-top:10px}
-pre{background:var(--ink);color:var(--bg);padding:17px 20px;border-radius:12px;overflow-x:auto;
- font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.81rem;line-height:1.65}
-.honest{background:var(--okBg);border:1.5px solid var(--ok);border-radius:17px;padding:26px 29px}
-.honest ul{margin:12px 0 0;padding-left:20px}
-.honest li{margin-bottom:10px;font-size:.92rem;color:var(--soft)}
-.honest li b{color:var(--ink)}
-footer{padding:44px 0 70px;font-size:.87rem;color:var(--faint);border-top:1px solid var(--line)}
+.steps span{font-size:15.5px;color:var(--soft)}
+@media(max-width:800px){.steps{grid-template-columns:1fr}}
+pre{background:var(--ink);color:#E8ECF3;padding:20px 22px;border-radius:14px;overflow-x:auto;font:13.5px/1.7 var(--mono);margin:0}
+
+.d{display:block;background:var(--card);border-radius:14px;padding:22px;text-decoration:none;color:inherit;box-shadow:inset 0 0 0 1.5px transparent}
+.d:hover{color:inherit;box-shadow:inset 0 0 0 1.5px var(--ink)}
+.d .t{font-weight:800;font-stretch:85%;font-size:22px;margin-bottom:6px}
+.d .s{font-size:15px;color:var(--soft);line-height:1.5}
+.d .go{font-size:14px;font-weight:700;margin-top:12px;text-decoration:underline;text-decoration-color:var(--redLine);text-underline-offset:3px}
+
+.honest{background:var(--card);border-radius:20px;padding:34px 36px;border-top:6px solid var(--teal)}
+.honest ul{margin:16px 0 0;padding:0;list-style:none;columns:2;column-gap:40px}
+.honest li{break-inside:avoid;margin:0 0 16px;font-size:15.5px;color:var(--soft)}
+.honest li b{color:var(--ink);display:block}
+@media(max-width:800px){.honest{padding:24px 20px}.honest ul{columns:1}}
+footer{margin-top:96px;padding:36px 0 64px;font-size:14.5px;color:var(--faint);border-top:1px solid var(--line)}
 footer a{color:var(--soft)}
-.pill{display:inline-block;font-size:.68rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;
- padding:2px 9px;border-radius:999px;background:var(--accBg);color:var(--acc);margin-left:7px;vertical-align:2px}
-
-/* ---- Brand Light: typography + surface overrides ---- */
-body{font-family:var(--font-body);font-feature-settings:"cv05","ss01"}
-h1,h2{font-family:var(--font-head);font-weight:400}
-h1{letter-spacing:-.005em}
-h2{letter-spacing:0}
-.st .v,.dc .dv,.head .hn,.big .bv{font-family:var(--font-head);font-weight:400;letter-spacing:0}
-code,pre,th,.k,.cap,.in label{font-family:var(--font-mono)}
-.btn.p{background:var(--acc);color:#fff;border-color:var(--acc)}
-.btn.p:hover{opacity:.9}
-pre{background:#2f2f2f;color:#f4f2ef;border:0}
-.steps li::before{color:#fff}
-::selection{background:var(--acc);color:#fff}
-textarea::placeholder{color:#a8a29a}
-a{text-decoration-color:color-mix(in srgb,var(--acc) 45%,transparent)}
-
-nav{background:#2f2f2f;border-bottom:0;box-shadow:0 1px 0 rgba(0,0,0,.10)}
-nav a{color:#b5b1ab}
-nav a:hover{color:#fff}
-nav .gh{color:#fff}
-nav .repo{color:#a5a09a;border-color:#4d4d4d}
-video.film{width:100%;aspect-ratio:16/9;display:block;border-radius:16px;
- border:1px solid var(--line);background:#f4f4f4;box-shadow:0 14px 44px rgba(0,0,0,.10)}
-.brandbar span{color:var(--faint)}
+@media (prefers-reduced-motion:no-preference){.draw path.u{stroke-dasharray:900;stroke-dashoffset:900;animation:draw 1.6s .3s ease-out forwards}@keyframes draw{to{stroke-dashoffset:0}}}
 </style></head><body>
 
 <nav><div class="wrap">
-  <a class="brand" href="./"><img src="media/talentrubric-logo.png" alt="TalentRubric"><span class="repo">rubric-anchor</span></a>
-  <a href="#film">Film</a>
+  <a class="brand" href="./"><img src="media/talentrubric-logo-dark.png" alt="TalentRubric"><span class="repo">rubric-anchor</span></a>
   <a href="#evidence">Evidence</a>
+  <a href="#film">Film</a>
   <a href="#rules" class="hide">Rules</a>
   <a href="#v02">What's new</a>
   <a href="#params" class="hide">Parameters</a>
@@ -131,49 +132,42 @@ video.film{width:100%;aspect-ratio:16/9;display:block;border-radius:16px;
   <a href="#levels" class="hide">Levels</a>
   <a href="#kg" class="hide">Knowledge graph</a>
   <a href="#try">Try it</a>
-  <a class="gh" href="https://github.com/shravangithub/rubric-anchor">GitHub →</a>
+  <a class="gh" href="https://github.com/shravangithub/rubric-anchor">GitHub</a>
 </div></nav>
 
 <header><div class="wrap">
-  <h1>Measure candidates.<br>Don't rank them.</h1>
-  <p class="tag">A score should be a property of <em>the candidate</em> — not of the batch they arrived in, the order the files were uploaded, or the day you ran it.</p>
-  <p class="tag2">Open source, MIT licensed, no runtime dependencies. Every score cites the line of the CV it came from — no quote, no score.</p>
+  <h1>Your shortlist shouldn't depend on upload order.</h1>
+  <p class="lede">Five AI instances, the same twelve CVs, five different orders. Nobody's CV changed — their places did, right at the cut where decisions get made. rubric-anchor measures each candidate alone instead, and every score cites the line of the CV it came from.</p>
   <div class="cta">
     <a class="btn p" href="https://github.com/shravangithub/rubric-anchor">View on GitHub</a>
-    <a class="btn" href="stress-test.html">Test your own screening →</a>
-    <a class="btn" href="#evidence">See the evidence</a>
+    <a class="btn" href="stress-test.html">Test your own screening</a>
+  </div>
+  <div class="panel" id="evidence">
+    <div><h3>Ranked by comparison</h3>
+      <p class="cap">Each candidate's place in the ranking, runs 1 to 5. Red lines crossed a shortlist of five.</p>
+      <div class="chartscroll"><svg id="bump" class="draw" viewBox="0 0 560 330" role="img" aria-label="Rankings of twelve candidates across five runs. A, C and J stay at the top and L at the bottom; B, H and G cross the shortlist-of-five line between runs."></svg></div>
+      <div class="key"><span><i style="background:var(--redLine)"></i>changed sides of the cut</span><span><i style="background:var(--grey)"></i>held its place</span><span><i class="dash"></i>shortlist of five</span></div></div>
+    <div><h3>Measured alone (illustration)</h3>
+      <p class="cap">Each CV scored on its own against a fixed rubric: its number doesn't depend on who else is in the pile or the order they arrived.</p>
+      <svg id="flat" viewBox="0 0 340 330" role="img" aria-label="Illustration: twelve flat lines, one per candidate, unchanged across five runs."></svg>
+      <div class="key"><span><i style="background:var(--teal)"></i>order and batch can't move it</span></div></div>
+    <div class="finding">
+      <p><b>The extremes never moved. The middle did.</b> G placed 4th in one run and 11th in another, on an unchanged CV. H sat at 5th four times — enough to look settled — then 9th on the fifth.</p>
+      <p>At a shortlist of three, nothing crossed the line. At a shortlist of five, <b>a quarter of the pool was unstable</b>. Instability concentrates exactly at the cut, which is the only place decisions get made. <a href="https://github.com/shravangithub/rubric-anchor/tree/master/experiments/shuffle_llm">Method, data and caveats</a></p>
+    </div>
   </div>
   <div class="stats" id="stats"></div>
 </div></header>
 
 <section id="film"><div class="wrap">
-  <div class="k">Fifty-three seconds</div>
-  <h2>The whole argument, as a film</h2>
+  <h2>The whole argument in fifty-three seconds</h2>
   <p class="sub">Twelve résumés reordered three times, one candidate measured against 247 fixed parameters, and what the graph remembers afterwards.</p>
   <video class="film" controls preload="metadata" playsinline
          poster="media/film-poster.jpg"
          src="media/TalentRubric-Measure-Not-Rank.mp4"></video>
 </div></section>
 
-<section id="evidence"><div class="wrap">
-<div class="evi">
-  <div class="k" style="color:var(--warm)">Measured, not argued</div>
-  <h2>The same 12 CVs, five AI instances, five different orders</h2>
-  <p style="color:var(--soft);margin:0 0 16px;max-width:700px">Twelve comparable senior-engineer CVs. Five independent runs, each shown the same candidates in a different sequence. Nothing about anyone changed between runs.</p>
-  <div class="tscroll"><table>
-    <tr><th>candidate</th><th>run 1</th><th>run 2</th><th>run 3</th><th>run 4</th><th>run 5</th><th>swing</th></tr>
-    <tr><td>A</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>0</td></tr>
-    <tr class="hot"><td>G</td><td>6</td><td>8</td><td>11</td><td>4</td><td>5</td><td>7 places</td></tr>
-    <tr class="hot"><td>H</td><td>5</td><td>5</td><td>5</td><td>5</td><td>9</td><td>4 places</td></tr>
-    <tr><td>L</td><td>12</td><td>12</td><td>12</td><td>12</td><td>12</td><td>0</td></tr>
-  </table></div>
-  <p style="font-size:.93rem;margin:16px 0 0"><b>The extremes never moved. The middle did.</b> G placed 4th in one run and 11th in another, on an unchanged CV. H sat at 5th four times — enough to look settled — then 9th on the fifth.</p>
-  <p style="font-size:.92rem;margin:9px 0 0;color:var(--soft)">At a shortlist of three, nothing crossed the line. At a shortlist of five, <b>a quarter of the pool was unstable</b>. Instability doesn't spread evenly — it concentrates exactly at the cut, which is the only place decisions get made. <a href="https://github.com/shravangithub/rubric-anchor/tree/master/experiments/shuffle_llm">Method, data and caveats →</a></p>
-</div>
-</div></section>
-
 <section id="rules"><div class="wrap">
-  <div class="k">Why it's different</div>
   <h2>Three rules, all enforced by tests</h2>
   <p class="sub">Not principles in a README — assertions in a test suite that fail if someone changes them.</p>
   <div class="grid3">
@@ -190,7 +184,7 @@ video.film{width:100%;aspect-ratio:16/9;display:block;border-radius:16px;
 </div></section>
 
 <section id="v02"><div class="wrap">
-  <div class="k">New in 0.2 · October 2026</div>
+  <p class="ver">New in version 0.2, October 2026</p>
   <h2>Ready for a live model, and for the 2026 rules</h2>
   <p class="sub">Isolation removes order and batch effects. These close the gaps it leaves — each one a test that fails if someone removes it.</p>
   <div class="grid3">
@@ -216,7 +210,6 @@ video.film{width:100%;aspect-ratio:16/9;display:block;border-radius:16px;
 </div></section>
 
 <section id="params"><div class="wrap">
-  <div class="k">The instrument</div>
   <h2>Four dimensions, three of which add parameters</h2>
   <p class="sub">A requisition scores on the core, plus one company type, plus one role — reweighted by level. <b>Level reweights and adds nothing</b>, so an entry candidate and a director are measured on the same instrument and their scores stay comparable.</p>
   <div class="grid4" style="margin-bottom:26px">
@@ -225,33 +218,29 @@ video.film{width:100%;aspect-ratio:16/9;display:block;border-radius:16px;
     <div class="c"><h3>Role <span class="pill">14</span></h3><p>What the job actually is, not what the title says.</p></div>
     <div class="c"><h3>Level <span class="pill">9</span></h3><p>Reweights. Entry leans on education; C-level leans on scope.</p></div>
   </div>
-  <h3 style="font-size:1.05rem;margin:0 0 12px">The nine always-on families</h3>
+  <h3 class="subhead">The nine always-on families</h3>
   <div class="grid3" id="core"></div>
 </div></section>
 
 <section id="companies"><div class="wrap">
-  <div class="k">Company types</div>
   <h2>Twelve packs — activate exactly one</h2>
   <p class="sub">What counts as evidence differs sharply between a captive centre and a research lab. GCC is deliberately separate from IT services: a services firm delivers to a client, a GCC owns a charter.</p>
   <div class="grid3" id="ind"></div>
 </div></section>
 
 <section id="roles"><div class="wrap">
-  <div class="k">Roles</div>
   <h2>Fourteen roles across engineering, go-to-market and leadership</h2>
   <p class="sub">Roles describe the work, not the title. A "Senior Manager" at one company is an IC at another — the level profile handles seniority separately.</p>
   <div id="roles-out"></div>
 </div></section>
 
 <section id="levels"><div class="wrap">
-  <div class="k">Experience levels</div>
   <h2>Same instrument, different emphasis</h2>
   <p class="sub">Share of the final score by family, entry through C-level. Education falls from 16.9% to 3.1%; scope rises from 3.8% to 20.5%. Nobody hires a CEO on their GitHub.</p>
   <div class="hm"><table id="hm"></table></div>
 </div></section>
 
 <section id="kg"><div class="wrap">
-  <div class="k">Knowledge graph layer</div>
   <h2>Where scores stop being disposable</h2>
   <p class="sub">Every assessment becomes facts with provenance. The point isn't to screen anyone — it's to accumulate the record that answers the question no single requisition can: <b>which of our criteria actually predicted a good hire?</b></p>
   <div class="grid2">
@@ -267,7 +256,6 @@ video.film{width:100%;aspect-ratio:16/9;display:block;border-radius:16px;
 </div></section>
 
 <section id="how"><div class="wrap">
-  <div class="k">How it works</div>
   <h2>One candidate at a time</h2>
   <ol class="steps">
     <li><b>Parse the requirements once</b><span>The JD becomes testable requirements with weights and gate types. A human approves this before any CV is read.</span></li>
@@ -289,27 +277,25 @@ python evals/run_evals.py --cvs ./cvs      # the report to attach before going l
 </div></section>
 
 <section id="try"><div class="wrap">
-  <div class="k">Try it</div>
   <h2>Three things you can click right now</h2>
   <p class="sub">No install, nothing uploaded — everything runs in your browser.</p>
   <div class="grid3">
     <a class="d" href="stress-test.html"><div class="t">Shortlist Stress Test</div>
       <div class="s">Paste three rankings from your own AI. It tells you which candidates it wasn't actually sure about.</div>
-      <div class="go">Open the tool →</div></a>
+      <div class="go">Open the stress test</div></a>
     <a class="d" href="company-types.html"><div class="t">Parameters &amp; weights</div>
       <div class="s">All 247 parameters across the 12 company types, expandable to every definition and weight.</div>
-      <div class="go">Explore →</div></a>
+      <div class="go">Explore parameters</div></a>
     <a class="d" href="roles-levels.html"><div class="t">Roles &amp; levels</div>
       <div class="s">14 roles, 9 levels, and the full weight heatmap showing what each level actually cares about.</div>
-      <div class="go">Explore →</div></a>
+      <div class="go">Explore roles and levels</div></a>
   </div>
 </div></section>
 
 <section id="limits"><div class="wrap">
 <div class="honest">
-  <div class="k" style="color:var(--ok)">Responsible use</div>
   <h2>What this does not do</h2>
-  <p style="color:var(--soft);margin:0">Stated here rather than buried, because a screening tool that oversells itself is the problem it claims to solve.</p>
+  <p class="sub" style="margin:0">Stated here rather than buried, because a screening tool that oversells itself is the problem it claims to solve.</p>
   <ul>
     <li><b>It does not make your shortlist better at predicting talent.</b> It makes it repeatable and explainable. Those are different claims and only the second one is honest.</li>
     <li><b>It does not validate your rubric.</b> A perfectly built system applying criteria that don't predict performance will apply them consistently to everyone. The graph layer exists to find that out — but it needs a few hundred hires and a couple of years first.</li>
@@ -346,7 +332,7 @@ document.getElementById('core').innerHTML=S.core.map(function(f){
   return '<div class="c"><h3>'+f.f.replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();})+
     ' <span class="pill">'+f.n+'</span></h3>'+
     '<ul>'+f.top.map(function(t){return '<li><span>'+t+'</span></li>';}).join('')+'</ul>'+
-    '<div class="n">'+f.code+' of '+f.n+' computed in code · raw weight '+f.w.toFixed(3)+'</div></div>';
+    '<div class="n">'+f.code+' of '+f.n+' computed in code, raw weight '+f.w.toFixed(3)+'</div></div>';
 }).join('');
 
 document.getElementById('ind').innerHTML=S.ind.map(function(i){
@@ -356,14 +342,14 @@ document.getElementById('ind').innerHTML=S.ind.map(function(i){
 }).join('');
 
 document.getElementById('roles-out').innerHTML=S.roles.map(function(g){
-  return '<h3 style="font-size:.75rem;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);margin:22px 0 11px">'+g.g+'</h3>'+
+  return '<h3 class="group">'+g.g+'</h3>'+
    '<div class="grid3">'+g.items.map(function(r){
     return '<div class="c"><h3>'+r.label+' <span class="pill">'+r.n+'</span></h3><p>'+r.blurb+'</p>'+
       '<ul>'+r.top.map(function(t){return '<li><span>'+t.l+'</span><b>'+t.w.toFixed(3)+'</b></li>';}).join('')+
       '</ul></div>';}).join('')+'</div>';
 }).join('');
 
-var SH=['var(--b1)','var(--b2)','var(--b3)','var(--b4)','var(--b5)','var(--b6)'];
+var SH=['var(--t1)','var(--t2)','var(--t3)','var(--t4)','var(--t5)','var(--t6)'];
 var mx=0; S.levels.forEach(function(l){S.fams.forEach(function(f){mx=Math.max(mx,l.share[f]||0);});});
 document.getElementById('hm').innerHTML='<tr><th>Level</th>'+
  S.fams.map(function(f){return '<th>'+f.replace(/_/g," ")+'</th>';}).join('')+'</tr>'+
@@ -374,4 +360,26 @@ document.getElementById('hm').innerHTML='<tr><th>Level</th>'+
        return '<td><div class="cell" style="background:'+(v<0.6?'transparent':SH[i])+';color:'+
          (v/mx>0.55?'#fff':'var(--ink)')+'">'+v+'</div></td>';}).join('')+'</tr>';
  }).join('');
+</script>
+<script>
+(function(){
+var R=["A C J B H G D F I E K L","A C J B H D E G F I K L","A C J B H D F I K E G L","A C J G H B D E F I K L","A C J B G D F E H I K L"].map(function(x){return x.split(" ")});
+var ids="ABCDEFGHIJKL".split(""),H=330,x0=34,x1=530,y0=20,dy=26.5,cut=5;
+function X(i){return x0+i*(x1-x0)/4}function Y(p){return y0+(p-1)*dy}
+var base='<line x1="'+x0+'" x2="'+x1+'" y1="'+(Y(cut)+dy/2)+'" y2="'+(Y(cut)+dy/2)+'" stroke="#172033" stroke-dasharray="5 4" stroke-width="1.4"/>';
+for(var i=0;i<5;i++)base+='<text x="'+X(i)+'" y="'+(H-4)+'" text-anchor="middle" font-size="12.5" fill="#5A667D">run '+(i+1)+'</text>';
+var calm='',hot='';
+ids.forEach(function(c){var ps=R.map(function(r){return r.indexOf(c)+1});
+ var un=Math.min.apply(0,ps)<=cut&&Math.max.apply(0,ps)>cut,col=un?'#E23B3B':'#A3ADBC';
+ var d=ps.map(function(p,i){return(i?'L':'M')+X(i)+' '+Y(p)}).join(' ');
+ var l='<path class="'+(un?'u':'')+'" d="'+d+'" fill="none" stroke="'+col+'" stroke-width="'+(un?3:1.6)+'" stroke-linejoin="round"><title>'+c+': places '+ps.join(', ')+'</title></path>'+
+  ps.map(function(p,i){return'<circle cx="'+X(i)+'" cy="'+Y(p)+'" r="'+(un?4:2.6)+'" fill="'+col+'"/>'}).join('')+
+  '<text x="'+(x0-14)+'" y="'+(Y(ps[0])+4)+'" text-anchor="end" font-size="12.5" font-weight="'+(un?700:500)+'" fill="'+(un?'#C92A2A':'#5A667D')+'">'+c+'</text>';
+ if(un)hot+=l;else calm+=l;});
+document.getElementById('bump').innerHTML=base+calm+hot;
+var f='',order="ACJBHGDFEIKL";
+for(var i=0;i<12;i++){var y=y0+i*dy;f+='<line x1="30" x2="322" y1="'+y+'" y2="'+y+'" stroke="#1F7A6E" stroke-width="2"/><text x="20" y="'+(y+4)+'" text-anchor="end" font-size="12.5" fill="#5A667D">'+order[i]+'</text>';}
+for(var i=0;i<5;i++)f+='<text x="'+(30+i*73)+'" y="'+(H-4)+'" text-anchor="middle" font-size="12.5" fill="#5A667D">run '+(i+1)+'</text>';
+document.getElementById('flat').innerHTML=f;
+})();
 </script></body></html>
