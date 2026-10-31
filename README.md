@@ -246,6 +246,11 @@ ANTHROPIC_API_KEY=... python evals/run_evals.py --cvs your_cvs \
     --provider anthropic --model claude-sonnet-5-5 --runs 3          # live
 ```
 
+Or from GitHub: the `live-evals` workflow (Actions tab, Run workflow) runs
+the eval report and the shuffle experiment on the models you name, using the
+`ANTHROPIC_API_KEY` / `OPENAI_API_KEY` repository secrets, uploads the reports
+and opens a pull request with the per-model shuffle results.
+
 One JSON report: stability (spread and band per CV), the proxy swaps, the
 polish test, and four planted injections per CV, with the provenance — package, extractor,
 model, prompt version — it was produced with. `prompt_version` is a hash of

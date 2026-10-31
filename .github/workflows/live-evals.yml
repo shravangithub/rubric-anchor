@@ -1,0 +1,63 @@
+# Live runs, on demand. Needs repository secrets ANTHROPIC_API_KEY and/or
+# OPENAI_API_KEY (Settings -> Secrets and variables -> Actions). Costs a few
+# hundred requests per run. Results land as a downloadable artifact and, for
+# the shuffle, as a results-<model>.json committed to a branch for a PR.
+name: live-evals
+on:
+  workflow_dispatch:
+    inputs:
+      anthropic_models:
+        description: "Anthropic models, comma-separated (blank to skip)"
+        default: "claude-sonnet-5-5,claude-haiku-5-5"
+      openai_models:
+        description: "OpenAI models, comma-separated (blank to skip)"
+        default: ""
+      runs:
+        description: "Scoring repeats per CV for the stability check"
+        default: "3"
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]" anthropic openai
+      - name: Eval report and shuffle, per model
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          set -e
+          mkdir -p live
+          run_models () {
+            provider=$1; models=$2
+            for m in $(echo "$models" | tr ',' ' '); do
+              echo "== $provider / $m"
+              python evals/run_evals.py --cvs examples/sample_cvs --provider $provider --model $m \
+                --runs ${{ github.event.inputs.runs }} --out live/eval-$m.json || echo "eval FAILED for $m (see report)"
+              python experiments/shuffle_llm/run_live.py --provider $provider --model $m
+              python experiments/shuffle_llm/analyse.py --results experiments/shuffle_llm/results-$m.json | tee live/shuffle-$m.txt
+            done
+          }
+          [ -n "${{ github.event.inputs.anthropic_models }}" ] && [ -n "$ANTHROPIC_API_KEY" ] && run_models anthropic "${{ github.event.inputs.anthropic_models }}"
+          [ -n "${{ github.event.inputs.openai_models }}" ] && [ -n "$OPENAI_API_KEY" ] && run_models openai "${{ github.event.inputs.openai_models }}"
+          cp experiments/shuffle_llm/results-*.json live/ 2>/dev/null || true
+          ls -la live
+      - uses: actions/upload-artifact@v4
+        with:
+          name: live-evals-${{ github.run_number }}
+          path: live/
+      - name: Open a PR with the shuffle results files
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: live-results-${{ github.run_number }}
+          title: "Shuffle results from live run ${{ github.run_number }}"
+          commit-message: "experiments: shuffle results from live run ${{ github.run_number }}"
+          body: |
+            Per-model shuffle results written by `run_live.py`. Eval reports (stability, proxy swaps, polish, injection) are in the run's artifact; they carry the model and prompt version they were produced with.
+          add-paths: experiments/shuffle_llm/results-*.json
