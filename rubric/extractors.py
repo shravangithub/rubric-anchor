@@ -334,9 +334,13 @@ class NullExtractor:
         out = {}
         m = re.search(r"(?im)^.*work\s*authoris?z?ation.*$", resume)
         if m:
-            out["work_authorization"] = {
-                "value": not re.search(r"(?i)\b(not|no|requires? sponsorship)\b", m.group(0)),
-                "span": m.group(0).strip()}
+            line = m.group(0)
+            # "no sponsorship required" is a YES. Only an explicit statement of
+            # absence or of needing sponsorship counts as a NO.
+            neg = re.search(r"(?i)\b(not\s+authori[sz]ed|unauthori[sz]ed|"
+                            r"requires?\s+(?:visa\s+)?sponsorship|"
+                            r"needs?\s+(?:visa\s+)?sponsorship)\b", line)
+            out["work_authorization"] = {"value": not neg, "span": line.strip()}
         m = re.search(r"(?im)^.*notice period.*$", resume)
         if m:
             d = re.search(r"(\d+)\s*(day|week|month)", m.group(0), re.I)
