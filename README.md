@@ -482,7 +482,7 @@ provenance record exist because of this list.
 pip install -e ".[dev]" && pytest -q
 ```
 
-109 tests. They are the specification: if you change a rule, a test should fail
+111 tests. They are the specification: if you change a rule, a test should fail
 and you should have to write down why. (v0.2 did exactly that: the test that
 let a bona-fide gate close an application on its own was rewritten, with the
 reason in its docstring.)

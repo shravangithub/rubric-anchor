@@ -1,5 +1,18 @@
 # Changelog
 
+## Docs — 31 October 2026 (after 0.2.0)
+
+- `docs/PARAMETERS.md` is now generated from code (`scripts/gen_parameters_md.py`)
+  and checked by a test. It was stale: it listed 10 industry packs (the code has
+  12) and no role packs.
+- No page, table or CLI output says "auto-reject" any more; a test keeps it that
+  way. Gates read "propose reject — person confirms" or "person decides".
+- Project site: new "What's new in 0.2" section, `scan` and eval commands in the
+  quick start, and two more honest limits (redaction is not anonymisation; the
+  notice is a template, not legal advice).
+
+Tests: 109 → 111.
+
 ## 0.2.0 — 31 October 2026
 
 Hardening for live models and for the 2026 rules on automated hiring decisions.

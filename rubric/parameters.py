@@ -8,8 +8,9 @@ Design rules, enforced by tests:
      Anything an analyst could do with dates and a written rule is CODE.
   3. Every MODEL parameter must return evidence -- a verbatim span from the
      source document. No span, no score.
-  4. A gate may only auto-reject if bona_fide is True. Everything else routes
-     to a human.
+  4. A gate may only PROPOSE a rejection if bona_fide is True, and a person
+     confirms it (Result.decision == "confirm_reject"). Everything else routes
+     to a person for review. No gate closes an application on its own.
   5. Protected attributes are not parameters and never will be. See BLOCKED.
 """
 from __future__ import annotations
@@ -67,7 +68,7 @@ def _p(*a, **k) -> Parameter:
 ELIGIBILITY = [
     _p("work_authorization", "Authorised to work in the hiring location",
        "eligibility", Kind.GATE, How.CODE, bona_fide=True,
-       notes="The only gate that auto-rejects by default."),
+       notes="May propose a rejection; a person confirms. Not stated = Unknown, not a fail."),
     _p("location_eligible", "Meets the role's location or onsite requirement",
        "eligibility", Kind.GATE, How.CODE, bona_fide=False),
     _p("notice_period_acceptable", "Notice period within the stated limit",

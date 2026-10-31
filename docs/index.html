@@ -27,6 +27,8 @@ nav a{font-size:.82rem;color:var(--soft);text-decoration:none;white-space:nowrap
 nav a:hover{color:var(--ink)}
 nav .gh{margin-left:auto;font-weight:700;color:var(--ink)}
 @media(max-width:760px){nav .hide{display:none}}
+@media(max-width:560px){nav .wrap{overflow-x:auto;scrollbar-width:none}nav .wrap::-webkit-scrollbar{display:none}nav .gh{margin-left:0}}
+.tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
 header{padding:70px 0 42px}
 h1{font-size:3.5rem;line-height:1.02;margin:0 0 16px;letter-spacing:-.038em}
 @media(max-width:640px){h1{font-size:2.4rem}}
@@ -122,6 +124,7 @@ video.film{width:100%;aspect-ratio:16/9;display:block;border-radius:16px;
   <a href="#film">Film</a>
   <a href="#evidence">Evidence</a>
   <a href="#rules" class="hide">Rules</a>
+  <a href="#v02">What's new</a>
   <a href="#params" class="hide">Parameters</a>
   <a href="#companies">Companies</a>
   <a href="#roles">Roles</a>
@@ -157,13 +160,13 @@ video.film{width:100%;aspect-ratio:16/9;display:block;border-radius:16px;
   <div class="k" style="color:var(--warm)">Measured, not argued</div>
   <h2>The same 12 CVs, five AI instances, five different orders</h2>
   <p style="color:var(--soft);margin:0 0 16px;max-width:700px">Twelve comparable senior-engineer CVs. Five independent runs, each shown the same candidates in a different sequence. Nothing about anyone changed between runs.</p>
-  <table>
+  <div class="tscroll"><table>
     <tr><th>candidate</th><th>run 1</th><th>run 2</th><th>run 3</th><th>run 4</th><th>run 5</th><th>swing</th></tr>
     <tr><td>A</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>0</td></tr>
     <tr class="hot"><td>G</td><td>6</td><td>8</td><td>11</td><td>4</td><td>5</td><td>7 places</td></tr>
     <tr class="hot"><td>H</td><td>5</td><td>5</td><td>5</td><td>5</td><td>9</td><td>4 places</td></tr>
     <tr><td>L</td><td>12</td><td>12</td><td>12</td><td>12</td><td>12</td><td>0</td></tr>
-  </table>
+  </table></div>
   <p style="font-size:.93rem;margin:16px 0 0"><b>The extremes never moved. The middle did.</b> G placed 4th in one run and 11th in another, on an unchanged CV. H sat at 5th four times — enough to look settled — then 9th on the fifth.</p>
   <p style="font-size:.92rem;margin:9px 0 0;color:var(--soft)">At a shortlist of three, nothing crossed the line. At a shortlist of five, <b>a quarter of the pool was unstable</b>. Instability doesn't spread evenly — it concentrates exactly at the cut, which is the only place decisions get made. <a href="https://github.com/shravangithub/rubric-anchor/tree/master/experiments/shuffle_llm">Method, data and caveats →</a></p>
 </div>
@@ -183,6 +186,32 @@ video.film{width:100%;aspect-ratio:16/9;display:block;border-radius:16px;
     <div class="c"><h3>A person makes the adverse call</h3>
       <p>Only two of eight gates may propose a rejection — work authorisation and a legally required licence — and a person confirms it with one click. If the CV doesn't say, that's an Unknown to ask about, never a fail.</p>
       <div class="n">The machine narrows the pool; a person says no.</div></div>
+  </div>
+</div></section>
+
+<section id="v02"><div class="wrap">
+  <div class="k">New in 0.2 · October 2026</div>
+  <h2>Ready for a live model, and for the 2026 rules</h2>
+  <p class="sub">Isolation removes order and batch effects. These close the gaps it leaves — each one a test that fails if someone removes it.</p>
+  <div class="grid3">
+    <div class="c"><h3>No gate closes an application</h3>
+      <p>A failed work-authorisation or licence check now <em>proposes</em> a rejection. A person confirms it with one click before anything reaches the candidate.</p>
+      <div class="n">Automated-decision rules increasingly require a reviewer with authority to change the outcome.</div></div>
+    <div class="c"><h3>Unknown is not a fail</h3>
+      <p>A CV that doesn't mention work authorisation hasn't said "no". It's recorded as Unknown and turned into a question for the candidate.</p>
+      <div class="n">Found a real bug on the way: "no sponsorship required" was being read as not authorised.</div></div>
+    <div class="c"><h3>Redaction, in code</h3>
+      <p>Emails, phone numbers, profile links, gendered pronouns and the name line are removed before the model reads anything — and every quote is checked against the redacted text.</p>
+      <div class="n">The audit keeps counts, never the removed values.</div></div>
+    <div class="c"><h3>A CV can't write its own score</h3>
+      <p>Lines that address the model — "ignore previous instructions", "SYSTEM:", hidden characters — are flagged, the CV goes to a person, and nothing quoted from those lines counts as evidence.</p>
+      <div class="n">The prompt asks; this enforces.</div></div>
+    <div class="c"><h3>Ranges and bands, not one run</h3>
+      <p>A live model wobbles run to run. Each CV can be scored several times, still alone. Anyone whose range straddles the cut-off is borderline, and a person decides.</p>
+      <div class="n">The fix for the 4th-to-11th swing in the experiment above.</div></div>
+    <div class="c"><h3>Swap test and eval report</h3>
+      <p>Change only a name or a pronoun and check the score doesn't move. One command runs stability, swaps and planted injections, and records the model and prompt version that produced the result.</p>
+      <div class="n">Run it before switching any model on, and again when it changes.</div></div>
   </div>
 </div></section>
 
@@ -254,7 +283,9 @@ video.film{width:100%;aspect-ratio:16/9;display:block;border-radius:16px;
 python -m rubric params --industry fintech --role backend
 python -m rubric score --job job.json --cvs ./cvs --role backend --level senior
 python -m rubric audit --rankings rankings.json --shortlist 5
-python -m rubric validate --db people.db</pre>
+python -m rubric scan --cvs ./cvs          # injection + redaction check
+python -m rubric validate --db people.db
+python evals/run_evals.py --cvs ./cvs      # the report to attach before going live</pre>
 </div></section>
 
 <section id="try"><div class="wrap">
@@ -282,7 +313,9 @@ python -m rubric validate --db people.db</pre>
   <ul>
     <li><b>It does not make your shortlist better at predicting talent.</b> It makes it repeatable and explainable. Those are different claims and only the second one is honest.</li>
     <li><b>It does not validate your rubric.</b> A perfectly built system applying criteria that don't predict performance will apply them consistently to everyone. The graph layer exists to find that out — but it needs a few hundred hires and a couple of years first.</li>
-    <li><b>It catches noise, not bias.</b> A system that is <em>confidently wrong</em> about a group looks perfectly settled. Only outcome tracking finds that.</li>
+    <li><b>It catches noise, not bias.</b> A system that is <em>confidently wrong</em> about a group looks perfectly settled. The swap test finds the proxies you think to test; only outcome tracking finds the rest.</li>
+    <li><b>Redaction is not anonymisation.</b> It removes the obvious markers. A club name, a career-break year or a home town can still give a person away — which is what the swap test is for.</li>
+    <li><b>It is not legal advice.</b> The candidate notice it writes is a template. Have whoever owns employment law where you hire approve it, and check the current rules — they moved several times in 2026.</li>
     <li><b>Institution tier is deliberately not a parameter.</b> College ranking is the strongest single proxy for socio-economic background in most markets. A test keeps it out.</li>
     <li><b>Absence of public work is never a penalty.</b> Employer IP policy, NDAs and unpaid-time inequality suppress GitHub activity independently of ability, so those parameters leave the composite rather than scoring zero.</li>
     <li><b>The weights are considered judgement, not measured validity.</b> Reweight for your context, and record who approved it and when.</li>
@@ -291,7 +324,7 @@ python -m rubric validate --db people.db</pre>
 </div></section>
 
 <footer><div class="wrap">
-  <p><b>rubric-anchor</b> — MIT licensed · 247 parameters · 109 tests · no runtime dependencies<br>
+  <p><b>rubric-anchor</b> — MIT licensed · 247 parameters · 111 tests · no runtime dependencies<br>
   Built by <a href="https://github.com/shravangithub">Shravan</a> at TalentRubric Growth Advisors.</p>
   <p style="margin-top:14px"><a href="https://github.com/shravangithub/rubric-anchor">GitHub</a> ·
   <a href="https://github.com/shravangithub/rubric-anchor/tree/master/experiments/shuffle_llm">The experiment</a> ·
@@ -306,7 +339,7 @@ var S={"core": [{"f": "eligibility", "n": 8, "code": 8, "w": 0.0, "top": ["Autho
 document.getElementById('stats').innerHTML=[
  [S.total,"parameters defined"],[S.active,"active per requisition"],
  [S.combos.toLocaleString(),"possible configurations"],[S.code,"computed in code, no model"],
- ["109","tests, no API key needed"]
+ ["111","tests, no API key needed"]
 ].map(function(x){return '<div class="st"><div class="v">'+x[0]+'</div><div class="l">'+x[1]+'</div></div>';}).join('');
 
 document.getElementById('core').innerHTML=S.core.map(function(f){

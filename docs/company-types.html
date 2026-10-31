@@ -147,10 +147,10 @@ document.getElementById('fams').innerHTML=D.core.map(function(f,i){
   var auto=f.params.filter(function(p){return p.auto;}).length;
   var pills='<span class="pill p-code">'+f.code+' code</span>'+
     (f.n-f.code?'<span class="pill p-model">'+(f.n-f.code)+' model</span>':'')+
-    (gates?'<span class="pill p-gate">'+gates+' gate'+(auto?' · '+auto+' auto-reject':'')+'</span>':'');
+    (gates?'<span class="pill p-gate">'+gates+' gate'+(auto?' · '+auto+' propose reject, person confirms':'')+'</span>':'');
   var rows=f.params.map(function(p){
     return '<div class="pl"><span><b>'+p.k+'</b> — '+p.l+'</span>'+
-      '<span class="w">'+(p.kind==='gate'?(p.auto?'auto':'gate'):p.w.toFixed(3))+'</span></div>';}).join('');
+      '<span class="w">'+(p.kind==='gate'?(p.auto?'confirm':'gate'):p.w.toFixed(3))+'</span></div>';}).join('');
   return '<div class="fam"><div class="fn">'+f.family.replace(/_/g,' ')+'</div>'+
     '<div class="fm">'+f.n+' parameters · raw weight '+f.w.toFixed(3)+'</div>'+
     '<div class="bar"><i style="width:'+(f.w/maxFam*100)+'%"></i></div>'+
