@@ -1,5 +1,5 @@
-# Live runs, on demand. Needs repository secrets ANTHROPIC_API_KEY and/or
-# OPENAI_API_KEY (Settings -> Secrets and variables -> Actions). Costs a few
+# Live runs, on demand. Needs repository secrets ANTHROPIC_API_KEY, OPENAI_API_KEY
+# and/or GEMINI_API_KEY (Settings -> Secrets and variables -> Actions). Costs a few
 # hundred requests per run. Results land as a downloadable artifact and, for
 # the shuffle, as a results-<model>.json committed to a branch for a PR.
 name: live-evals
@@ -12,6 +12,9 @@ on:
       openai_models:
         description: "OpenAI models, comma-separated (blank to skip)"
         default: ""
+      gemini_models:
+        description: "Gemini models, comma-separated (blank to skip)"
+        default: "gemini-2.5-flash,gemini-2.5-pro"
       runs:
         description: "Scoring repeats per CV for the stability check"
         default: "3"
@@ -31,6 +34,7 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           set -e
           mkdir -p live
@@ -46,6 +50,8 @@ jobs:
           }
           [ -n "${{ github.event.inputs.anthropic_models }}" ] && [ -n "$ANTHROPIC_API_KEY" ] && run_models anthropic "${{ github.event.inputs.anthropic_models }}"
           [ -n "${{ github.event.inputs.openai_models }}" ] && [ -n "$OPENAI_API_KEY" ] && run_models openai "${{ github.event.inputs.openai_models }}"
+          [ -n "${{ github.event.inputs.gemini_models }}" ] && [ -n "$GEMINI_API_KEY" ] && run_models gemini "${{ github.event.inputs.gemini_models }}"
+          true
           cp experiments/shuffle_llm/results-*.json live/ 2>/dev/null || true
           ls -la live
       - uses: actions/upload-artifact@v4

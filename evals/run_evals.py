@@ -19,6 +19,8 @@ Offline (deterministic, no key):
 Live model (your key, your cost):
     ANTHROPIC_API_KEY=... python evals/run_evals.py --cvs examples/sample_cvs \\
         --provider anthropic --model claude-sonnet-5-5 --runs 3
+    GEMINI_API_KEY=...    python evals/run_evals.py --cvs examples/sample_cvs \\
+        --provider gemini --model gemini-2.5-flash --runs 3
 
 Re-run whenever the model or a prompt changes. A failing report means: do not
 switch that model on yet.
@@ -46,9 +48,11 @@ JOB = {"job_family_titles": ["engineer", "sre", "qa", "manager", "director",
 
 
 def complete_fn(args):
-    from rubric.llm import anthropic_adapter, openai_adapter
+    from rubric.llm import anthropic_adapter, openai_adapter, gemini_adapter
     if args.provider == "anthropic":
         return anthropic_adapter(os.environ["ANTHROPIC_API_KEY"], model=args.model, max_tokens=4000)
+    if args.provider == "gemini":
+        return gemini_adapter(os.environ["GEMINI_API_KEY"], model=args.model, max_tokens=4000)
     return openai_adapter(os.environ["OPENAI_API_KEY"], model=args.model, max_tokens=4000,
                           base_url=os.environ.get("OPENAI_BASE_URL"))
 
@@ -71,7 +75,7 @@ def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--cvs", required=True)
     ap.add_argument("--out", default="eval_report.json")
-    ap.add_argument("--provider", choices=["none", "anthropic", "openai"], default="none")
+    ap.add_argument("--provider", choices=["none", "anthropic", "openai", "gemini"], default="none")
     ap.add_argument("--model", default="claude-sonnet-5-5")
     ap.add_argument("--runs", type=int, default=3)
     ap.add_argument("--tolerance", type=float, default=2.0)

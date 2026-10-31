@@ -248,7 +248,8 @@ ANTHROPIC_API_KEY=... python evals/run_evals.py --cvs your_cvs \
 
 Or from GitHub: the `live-evals` workflow (Actions tab, Run workflow) runs
 the eval report and the shuffle experiment on the models you name, using the
-`ANTHROPIC_API_KEY` / `OPENAI_API_KEY` repository secrets, uploads the reports
+`ANTHROPIC_API_KEY` / `OPENAI_API_KEY` / `GEMINI_API_KEY` repository secrets
+(Gemini goes through its OpenAI-compatible endpoint; `--provider gemini`), uploads the reports
 and opens a pull request with the per-model shuffle results.
 
 One JSON report: stability (spread and band per CV), the proxy swaps, the
