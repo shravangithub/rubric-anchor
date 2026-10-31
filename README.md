@@ -9,6 +9,18 @@ CV it came from — no quote, no score.
 A candidate's score is a property of *that candidate* — not of the batch they
 arrived in, the order the files were uploaded, or the day you ran it.
 
+**Project site: [shravangithub.github.io/rubric-anchor](https://shravangithub.github.io/rubric-anchor/)**
+
+| Page | What it is |
+|---|---|
+| [Overview](https://shravangithub.github.io/rubric-anchor/) | The shuffle experiment as a chart, the rules, what's new in 0.2, and what this does not do |
+| [Shortlist Stress Test](https://shravangithub.github.io/rubric-anchor/stress-test.html) | Paste three rankings from your own AI; see which candidates it wasn't sure about. Runs in your browser |
+| [Parameters & weights](https://shravangithub.github.io/rubric-anchor/company-types.html) | The core plus all 12 company types — 148 parameters — with every definition and weight |
+| [Roles & levels](https://shravangithub.github.io/rubric-anchor/roles-levels.html) | 14 role packs, 9 levels, and the heatmap of what each level weights |
+
+The site is static HTML in [`docs/`](docs/), served by GitHub Pages from
+`master`. Nothing is uploaded or tracked.
+
 ### The One Minute Teaser
 
 [![Measure candidates. Don't rank them.](docs/media/film-poster.jpg)](https://shravangithub.github.io/rubric-anchor/#film)
@@ -249,8 +261,10 @@ blocks* — odd pairings are sometimes correct (a founding engineer, a technical
 CEO), and that is the recruiter's call, not the tool's.
 
 See [`docs/roles-levels.html`](docs/roles-levels.html) and
-[`docs/company-types.html`](docs/company-types.html) — both generated from the
-code, so they cannot drift.
+[`docs/company-types.html`](docs/company-types.html) for the interactive view,
+and [`docs/PARAMETERS.md`](docs/PARAMETERS.md) for the full reference — that
+file is regenerated from the code by `scripts/gen_parameters_md.py`, and a test
+fails if it falls behind.
 
 | Core family | Count | In code |
 |---|---|---|
