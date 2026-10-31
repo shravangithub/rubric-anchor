@@ -1,5 +1,23 @@
 # Changelog
 
+## Site — 31 October 2026
+
+- New design across all four pages of the project site. The overview opens with
+  the shuffle experiment drawn as a chart from `experiments/shuffle_llm/results.json`
+  (candidates that crossed the shortlist line in red) under the headline
+  "Your shortlist shouldn't depend on upload order."
+- One typeface (Archivo; condensed for headlines), a cool grey ground and navy
+  text. Red is used only for instability and failed gates; teal for stable
+  results and checks done in code.
+- One top menu on every page; the tool pages lose the "back to overview" bar.
+- The logo now uses the dark-text file on the light background (the old page
+  used the white-text file).
+- Every page fits a 390px phone screen with no sideways scrolling.
+- The overview's Parameters card now says 148 (core plus 12 company types),
+  matching the Parameters page; role packs are on the roles page.
+- README lists every page of the site; `pyproject.toml` carries the site,
+  repository and changelog links.
+
 ## Docs — 31 October 2026 (after 0.2.0)
 
 - `docs/PARAMETERS.md` is now generated from code (`scripts/gen_parameters_md.py`)

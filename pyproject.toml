@@ -21,6 +21,12 @@ classifiers = [
 ]
 dependencies = []
 
+[project.urls]
+Homepage = "https://shravangithub.github.io/rubric-anchor/"
+Repository = "https://github.com/shravangithub/rubric-anchor"
+Changelog = "https://github.com/shravangithub/rubric-anchor/blob/master/CHANGELOG.md"
+Experiment = "https://github.com/shravangithub/rubric-anchor/tree/master/experiments/shuffle_llm"
+
 [project.optional-dependencies]
 dev = ["pytest>=7.0"]
 
