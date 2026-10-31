@@ -68,8 +68,9 @@ def main(argv=None):
         complete = anthropic_adapter(os.environ["ANTHROPIC_API_KEY"], model=args.model,
                                      max_tokens=200, temperature=args.temperature)
     elif args.provider == "gemini":
+        # Gemini 2.5 thinks before it answers and the thinking counts against max_tokens
         complete = gemini_adapter(os.environ["GEMINI_API_KEY"], model=args.model,
-                                  max_tokens=200, temperature=args.temperature)
+                                  max_tokens=4000, temperature=args.temperature)
     else:
         complete = openai_adapter(os.environ["OPENAI_API_KEY"], model=args.model, max_tokens=200,
                                   temperature=args.temperature, base_url=os.environ.get("OPENAI_BASE_URL"))
