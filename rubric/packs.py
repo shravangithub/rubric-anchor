@@ -19,8 +19,9 @@ from .parameters import Parameter, Kind, How, _p
 
 
 # ===========================================================================
-# EDUCATION -- a real criterion. The discipline is about auto-rejection,
-# not about whether it may be scored at all.
+# EDUCATION -- a real criterion. The discipline is about rejection (only a
+# legally mandated credential may propose one, and a person confirms it),
+# not about whether education may be scored at all.
 # ===========================================================================
 EDUCATION = [
     _p("required_credential", "Holds a legally mandated qualification",

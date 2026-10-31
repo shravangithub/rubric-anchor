@@ -19,11 +19,12 @@ def _params(args):
     from .packs import build_rubric, INDUSTRY_PACKS
     rows = build_rubric(args.industry, getattr(args, "role", None))
     rows = [p for p in rows if not args.family or p.family == args.family]
-    print(f"{'key':<30}{'family':<13}{'kind':<8}{'how':<7}{'weight':>8}  auto-reject")
+    print(f"{'key':<30}{'family':<13}{'kind':<8}{'how':<7}{'weight':>8}  if gate fails")
     print("-" * 82)
     for p in rows:
         w = f"{p.weight:.3f}" if p.kind is P.Kind.SCORED else "-"
-        ar = ("YES" if p.bona_fide else "no") if p.kind is P.Kind.GATE else ""
+        ar = ("propose reject - person confirms" if p.bona_fide else "person decides") \
+            if p.kind is P.Kind.GATE else ""
         print(f"{p.key:<30}{p.family:<13}{p.kind.value:<8}{p.how.value:<7}{w:>8}  {ar}")
     print(f"\n{len(rows)} parameters   "
           f"({sum(1 for p in rows if p.how is P.How.CODE)} computed in code)")
