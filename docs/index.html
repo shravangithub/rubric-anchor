@@ -154,6 +154,7 @@ footer a{color:var(--soft)}
     <div class="finding">
       <p><b>The extremes never moved. The middle did.</b> G placed 4th in one run and 11th in another, on an unchanged CV. H sat at 5th four times — enough to look settled — then 9th on the fifth.</p>
       <p>At a shortlist of three, nothing crossed the line. At a shortlist of five, <b>a quarter of the pool was unstable</b>. Instability concentrates exactly at the cut, which is the only place decisions get made. <a href="https://github.com/shravangithub/rubric-anchor/tree/master/experiments/shuffle_llm">Method, data and caveats</a></p>
+      <p class="cap">claude-opus-5, default sampling, 19 August 2026. Order effects in LLM judges are documented across vendors (<a href="https://arxiv.org/abs/2506.14092">Fragile Preferences, 2025</a>; <a href="https://peerj.com/articles/cs-3628/">PeerJ CS, 2025</a>); <code>run_live.py</code> in the repo repeats this exact test on any model you name.</p>
     </div>
   </div>
   <div class="stats" id="stats"></div>
@@ -179,7 +180,7 @@ footer a{color:var(--soft)}
       <div class="n">Hallucination becomes a string comparison rather than a judgement call.</div></div>
     <div class="c"><h3>A person makes the adverse call</h3>
       <p>Only two of eight gates may propose a rejection — work authorisation and a legally required licence — and a person confirms it with one click. If the CV doesn't say, that's an Unknown to ask about, never a fail.</p>
-      <div class="n">The machine narrows the pool; a person says no.</div></div>
+      <div class="n">The machine narrows the pool; a person says no. It also writes the plain-language explanation the newer rules ask for, naming who decided.</div></div>
   </div>
 </div></section>
 
@@ -300,8 +301,9 @@ python evals/run_evals.py --cvs ./cvs      # the report to attach before going l
     <li><b>It does not make your shortlist better at predicting talent.</b> It makes it repeatable and explainable. Those are different claims and only the second one is honest.</li>
     <li><b>It does not validate your rubric.</b> A perfectly built system applying criteria that don't predict performance will apply them consistently to everyone. The graph layer exists to find that out — but it needs a few hundred hires and a couple of years first.</li>
     <li><b>It catches noise, not bias.</b> A system that is <em>confidently wrong</em> about a group looks perfectly settled. The swap test finds the proxies you think to test; only outcome tracking finds the rest.</li>
-    <li><b>Redaction is not anonymisation.</b> It removes the obvious markers. A club name, a career-break year or a home town can still give a person away — which is what the swap test is for.</li>
-    <li><b>It is not legal advice.</b> The candidate notice it writes is a template. Have whoever owns employment law where you hire approve it, and check the current rules — they moved several times in 2026.</li>
+    <li><b>Names out is not bias out.</b> <a href="https://aclanthology.org/2026.emnlp-main.998/">Tan et al. (EMNLP, October 2026)</a> removed every name from 4,100 CVs and 18 models still read ethnicity off the languages spoken and gender off the hobbies — and explaining themselves made it worse. So the languages, interests, volunteering and personal-details sections never reach the model here; the reviewer sees them. What survives inside the work history — a club name, a career-break year, a home town — is what the swap test is for, and it now runs by default with language, hobby and volunteering pairs.</li>
+    <li><b>Polish should not score.</b> AI screeners prefer AI-written CVs, most of all by the same model (<a href="https://arxiv.org/abs/2509.00462">arXiv 2509.00462</a>). "No quote, no score" is meant to blunt that; the polish test in the eval report has the scoring model rewrite the CV in shinier language, with no new facts allowed, and requires the score not to move. It is a measurement, not a promise: run it on your model before you trust it.</li>
+    <li><b>It is not legal advice.</b> The candidate notice and the adverse-outcome explanation it writes are templates. Have whoever owns employment law where you hire approve them, and check the current rules — they moved several times in 2026, and <em>Mobley v. Workday</em> put the vendor in the liability chain, which is one more reason this runs in your environment with no vendor-held score file.</li>
     <li><b>Institution tier is deliberately not a parameter.</b> College ranking is the strongest single proxy for socio-economic background in most markets. A test keeps it out.</li>
     <li><b>Absence of public work is never a penalty.</b> Employer IP policy, NDAs and unpaid-time inequality suppress GitHub activity independently of ability, so those parameters leave the composite rather than scoring zero.</li>
     <li><b>The weights are considered judgement, not measured validity.</b> Reweight for your context, and record who approved it and when.</li>

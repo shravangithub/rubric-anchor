@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rubric-anchor"
-version = "0.2.0"
+version = "0.3.0"
 description = "Absolute, evidence-anchored candidate scoring. A score is a property of the candidate, not of the batch they arrived in."
 readme = "README.md"
 requires-python = ">=3.10"

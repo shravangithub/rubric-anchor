@@ -7,7 +7,8 @@ This is measured.
 
 Twelve CVs for one senior backend role, written to be genuinely close in
 strength — twelve plausible candidates, not a CEO next to an intern. Five
-independent instances of a current frontier model. Each was shown the same
+independent instances of one model — claude-opus-5, default sampling, run on
+19 August 2026. Each was shown the same
 twelve CVs **in a different order** and asked to rank all twelve. No instance
 could see any other.
 
@@ -47,6 +48,24 @@ quarter of your pool is decided by something other than their CV.
 That is the practical finding: **instability doesn't spread evenly. It
 concentrates exactly at the cut line — which is the only place decisions
 actually get made.**
+
+## One model, one date
+
+The run above is claude-opus-5 on 19 August 2026. Order effects in LLM judges
+are documented across vendors (Shi et al., "Fragile Preferences", 2025;
+positional bias in comparative CV evaluation, PeerJ CS 2025), so this is not
+expected to be one vendor's quirk — but expectation is not measurement.
+`run_live.py` repeats the exact prompt and orders against any model you name
+and writes a results file `analyse.py` can read:
+
+```bash
+ANTHROPIC_API_KEY=... python experiments/shuffle_llm/run_live.py --provider anthropic --model claude-sonnet-5-5
+OPENAI_API_KEY=...    python experiments/shuffle_llm/run_live.py --provider openai --model gpt-5-mini
+python experiments/shuffle_llm/analyse.py --results experiments/shuffle_llm/results-claude-sonnet-5-5.json
+```
+
+Results files for other models are welcome as pull requests; the write-up
+will carry a per-model table once there are three.
 
 ## Four things this is not
 

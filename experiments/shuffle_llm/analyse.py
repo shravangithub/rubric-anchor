@@ -11,7 +11,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 from rubric.audit import analyse, report
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-data = json.load(open(os.path.join(HERE, "results.json")))
+_path = sys.argv[sys.argv.index("--results") + 1] if "--results" in sys.argv else os.path.join(HERE, "results.json")
+data = json.load(open(_path))
 rankings = [v.split() for v in data["rankings"].values()]
 
 pos = {}

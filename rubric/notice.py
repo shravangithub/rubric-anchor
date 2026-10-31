@@ -52,3 +52,51 @@ def candidate_notice(result: Result, *, company: str, contact: str,
         f"information.",
     ]
     return "\n".join(lines)
+
+
+def adverse_explanation(result: Result, *, company: str, contact: str,
+                        decided_by: str, gates_failed: list[str] | None = None,
+                        review_days: int = 30) -> str:
+    """Plain-language explanation of an adverse outcome, for the candidate.
+
+    Written for the rules that now ask for one (Colorado's ADMT Act from
+    1 January 2027: an explanation within 30 days and a route to human
+    review; the EU AI Act's transparency duties; the CCPA ADMT rules). It
+    names the person who decided, which requirements were not met, and
+    how to ask for review. It never discloses scores, weights or other
+    applicants. Keep the sent copy with the audit record; some rules ask
+    for three years.
+    """
+    failed = gates_failed if gates_failed is not None else [
+        g for g, ok in result.gates.items() if not ok]
+    words = {
+        "work_authorization": "authorisation to work in the hiring location",
+        "location_eligible": "the role's location or onsite requirement",
+        "notice_period_acceptable": "the notice period the role can accommodate",
+        "min_total_experience": "the minimum years of experience for the role",
+        "min_relevant_experience": "the minimum years in this kind of role",
+        "required_licence": "a licence the role legally requires",
+        "education_minimum": "the minimum qualification for the role",
+        "availability_date": "the start date the role needs",
+    }
+    lines = [
+        f"Thank you for applying to {company}.",
+        "",
+        f"We are not taking your application further for this role. The decision "
+        f"was made by {decided_by}, a person, after reviewing what your CV says "
+        f"against the role's requirements. An automated tool helped prepare that "
+        f"review; it did not make the decision.",
+    ]
+    if failed:
+        lines += ["", "The requirement(s) your application did not show:"]
+        lines += [f"  - {words.get(g, g.replace('_', ' '))}" for g in failed]
+    else:
+        lines += ["", "Your application met the role's stated requirements; other "
+                      "applicants showed closer evidence for what the role needs."]
+    lines += [
+        "",
+        f"If you believe something was read incorrectly, or you have information "
+        f"that was not in your CV, write to {contact} within {review_days} days and "
+        f"a person will review your application again and reply to you.",
+    ]
+    return "\n".join(lines)

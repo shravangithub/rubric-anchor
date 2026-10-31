@@ -1,5 +1,35 @@
 # Changelog
 
+## v0.3.0 — 31 October 2026
+
+Three changes made in response to what was published in the last quarter.
+
+- **Proxy redaction, on by default.** Tan et al. (EMNLP 2026) showed 18 models
+  recovering ethnicity from languages spoken and gender from hobbies on CVs with
+  every name removed, and that rationale prompting amplified it. `redact()`
+  now removes languages-spoken, hobbies/interests, volunteering, co-curricular
+  and personal-details sections before the model sees the CV; programming
+  languages stay. `score_candidate(redact_proxies=False)` and provenance
+  `proxy_redaction` record the choice.
+- **Proxy swaps in the eval report.** `counterfactual.PROXY_VARIANTS`
+  (pronouns, three language sets, three hobby sets, two volunteering lines, a
+  career break) run by default in `evals/run_evals.py`, in pairs.
+- **Polish-invariance test.** `rubric.polish.polish_test` has the scoring
+  model rewrite the CV in shinier language with no new facts (`fact_leak`
+  guards that) and requires the score not to move — the self-preference case
+  from arXiv 2509.00462. In the eval report as `polish`.
+- **Shuffle experiment, named and repeatable.** The write-up now says which
+  model and when (claude-opus-5, 19 August 2026). `experiments/shuffle_llm/run_live.py`
+  repeats the identical prompt and orders on any model; `analyse.py --results`
+  reads the result.
+- **`notice.adverse_explanation`** writes the plain-language adverse-outcome
+  explanation Colorado's ADMT Act (1 January 2027) asks for within 30 days,
+  naming the person who decided.
+- NullExtractor cues match at a word start ("rest" no longer fires on
+  "interests").
+- Candidate notice mentions that languages, interests and volunteering are not
+  shown to the tool.
+
 ## Site — 31 October 2026
 
 - New design across all four pages of the project site. The overview opens with

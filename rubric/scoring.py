@@ -90,7 +90,8 @@ def score_candidate(candidate_id: str, resume: str, job: dict,
                     level: str = "mid",
                     redact_pii: bool = True,
                     names: tuple[str, ...] | list[str] = (),
-                    institutions: tuple[str, ...] | list[str] = ()) -> Result:
+                    institutions: tuple[str, ...] | list[str] = (),
+                    redact_proxies: bool = True) -> Result:
     """Score ONE candidate against the rubric.
 
     `industry`  what kind of company  -> adds a pack
@@ -104,6 +105,8 @@ def score_candidate(candidate_id: str, resume: str, job: dict,
     `redact_pii`  on by default. The model sees -- and every span is verified
                   against -- the redacted text. Pass `names` / `institutions`
                   to remove those too.
+    `redact_proxies`  on by default: languages spoken, hobbies, volunteering
+                  and personal-details sections never reach the model either.
     """
     assert_single_candidate(resume)
     assert_no_protected_attributes(job, "the job spec")
@@ -115,6 +118,7 @@ def score_candidate(candidate_id: str, resume: str, job: dict,
         "model": getattr(extractor, "model_id", None),
         "prompt_version": getattr(extractor, "prompt_version", None),
         "redaction": redact_pii,
+        "proxy_redaction": redact_pii and redact_proxies,
         "industry": industry, "role": role, "level": level,
         "today": today.isoformat(),
     }
@@ -122,7 +126,7 @@ def score_candidate(candidate_id: str, resume: str, job: dict,
     # ---- untrusted input: scan, then redact ------------------------------
     findings = scan(resume)
     if redact_pii:
-        resume, rep = redact(resume, names, institutions)
+        resume, rep = redact(resume, names, institutions, proxies=redact_proxies)
         r.redaction = rep.as_dict()
     flagged = flagged_lines(resume, findings)
     r.injection = [f.as_dict() for f in findings]
