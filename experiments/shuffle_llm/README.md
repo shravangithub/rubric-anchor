@@ -57,6 +57,11 @@ this measures *total run-to-run instability*, of which input order is one
 component. Isolating order alone needs deterministic decoding with only the
 sequence changing.
 
+**One model, one date.** claude-opus-5, default sampling, 19 August 2026
+(`results.json` records it). `run_live.py --provider ... --model ...` repeats
+the identical prompt and orders on any other model and writes a results file
+`analyse.py --results <file>` reads.
+
 **N=5, one role, one pool.** Directional, not definitive — and the point is the
 *shape*, which matches what the simulations predicted: stable at both ends,
 unstable exactly at the boundary where the decision gets made.

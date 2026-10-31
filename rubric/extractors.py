@@ -352,7 +352,8 @@ class NullExtractor:
         cues = self.CUES.get(key) or self.ROLE_CUES.get(key, ())
         hits, span = [], ""
         for c in cues:
-            m = re.search(r"(?im)^.*" + re.escape(c) + r".*$", resume)
+            # word-start match: "rest" must not fire on "interests"
+            m = re.search(r"(?im)^.*\b" + re.escape(c) + r".*$", resume)
             if m:
                 hits.append(c)
                 span = span or m.group(0).strip()

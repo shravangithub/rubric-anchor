@@ -187,23 +187,56 @@ bands([s, ...], cutoff=55)   # {"clear_in": [...], "borderline": [...], "clear_o
 Shortlist by **band**, not by rank. Everyone whose range straddles the cut-off
 is `borderline`, and a person decides. One run's ordering never does.
 
-## Did redaction actually work? The swap test
+## Names out is not bias out
 
-Redaction removes the obvious markers. Proxies survive it — "captain, women's
-chess club", a career-break year, a home town. `swap_test` changes only
-something that must not matter and checks the score does not move:
+Tan et al. (EMNLP, October 2026) removed every name from 4,100 CVs and found
+18 models still recovering ethnicity from the languages a candidate speaks and
+gender from hobbies and activities — and that asking the model to explain
+itself made it worse. So, from v0.3, redaction also removes the sections that
+carry those markers: languages spoken, hobbies and interests, volunteering,
+co-curriculars, personal details. The human reviewer sees them; the model
+never does. Programming-language lines stay. `redact(cv, proxies=False)` turns
+it off, and only for measuring what it was doing.
+
+Proxies inside the work history survive — "captain, women's chess club" under
+a job, a career-break year, a home town. `swap_test` changes only something
+that must not matter and checks the score does not move:
 
 ```python
 from rubric import swap_test, replace, PRONOUN_SWAP
+from rubric.counterfactual import PROXY_VARIANTS   # pronouns, languages, hobbies, volunteering, a career break
 rep = swap_test("C-1", cv, job, extractor, {
-    "pronouns": PRONOUN_SWAP,
+    **PROXY_VARIANTS,
     "club": replace("Captain, chess club", "Captain, women's chess club"),
 })
 rep.passed, rep.worst, rep.as_dict()
 ```
 
+`PROXY_VARIANTS` come in pairs — Hindi/Telugu against Mandarin against
+English/French, cricket against rugby against knitting — because a model that
+moves for one and not the other has learned something it should not have. The
+eval report runs all of them by default; they are no longer opt-in.
+
 A test plants a deliberately biased extractor (it rewards "he") and asserts the
 swap test catches it with redaction off, and that redaction neutralises it.
+
+## Does polish move the score? The self-preference test
+
+LLM screeners prefer CVs written by an LLM, most of all by the same model
+(Smith School of Business, June 2026; Jiang et al., AIES 2026,
+arXiv 2509.00462). "No quote, no score" should blunt that, since polish adds
+no quotable facts — a claim, so it is measured. `polish_test` has the scoring
+model itself rewrite the CV in shinier language, checks that no number or
+date was invented (`fact_leak`), and compares the two scores:
+
+```python
+from rubric.polish import polish_test, llm_rewriter
+rep = polish_test("C-1", cv, job, extractor, llm_rewriter(complete))
+rep.passed, rep.delta, rep.fact_leak
+```
+
+A rewrite that invents a figure voids the comparison and fails the test
+whatever the delta.
 
 ## The eval report — run it before you switch a model on
 
@@ -213,8 +246,8 @@ ANTHROPIC_API_KEY=... python evals/run_evals.py --cvs your_cvs \
     --provider anthropic --model claude-sonnet-5-5 --runs 3          # live
 ```
 
-One JSON report: stability (spread and band per CV), counterfactual swaps, and
-four planted injections per CV, with the provenance — package, extractor,
+One JSON report: stability (spread and band per CV), the proxy swaps, the
+polish test, and four planted injections per CV, with the provenance — package, extractor,
 model, prompt version — it was produced with. `prompt_version` is a hash of
 every prompt template, so any wording change produces a new version and calls
 for a new report. Exit code 1 means: do not switch that model on yet.
@@ -482,10 +515,17 @@ the current position before relying on any of it:
 - **Connecticut.** From 1 October 2026, using an automated tool is not a
   defence to a discrimination complaint, and that covers tools whose scores or
   rankings substantially influence hiring.
-- **US litigation.** Claims that vendor-generated hiring scores are consumer
-  reports under the FCRA are being tested in court. Running this package in
-  your own environment, with no vendor-held score file, is a different
-  architecture — but ask your counsel what it means for you.
+- **Colorado.** The AI Act was repealed and replaced by the Automated
+  Decision-Making Technology Act, in force 1 January 2027: notice before use,
+  a plain-language explanation of an adverse outcome within 30 days, human
+  review on request, records kept three years. `notice.adverse_explanation`
+  writes that explanation from a `Result`, naming the person who decided.
+- **US litigation.** In Mobley v. Workday most claims survived dismissal
+  (June 2026), putting the vendor in the liability chain; class certification
+  is set for hearing in March 2027. Claims that vendor-generated hiring scores
+  are consumer reports under the FCRA are being tested too. Running this
+  package in your own environment, with no vendor-held score file, is a
+  different architecture — but ask your counsel what it means for you.
 
 v0.2's hold-and-confirm, unknown-is-not-a-fail, candidate notice and
 provenance record exist because of this list.
