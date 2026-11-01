@@ -220,7 +220,10 @@ def score_candidate(candidate_id: str, resume: str, job: dict,
     active_scored = [p for p in active if p.kind is P.Kind.SCORED]
     model_keys = [p.key for p in active_scored
                   if p.how is P.How.MODEL and p.key not in r.scores]
-    mclaims = [extractor.score_parameter(k, resume, job) for k in model_keys]
+    if hasattr(extractor, "score_parameters"):
+        mclaims = extractor.score_parameters(model_keys, resume, job)
+    else:
+        mclaims = [extractor.score_parameter(k, resume, job) for k in model_keys]
     mkept, mdropped = verify(mclaims, resume)
     before = len(r.dropped)
     mkept = _quarantine(mkept)

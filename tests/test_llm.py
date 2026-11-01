@@ -77,7 +77,8 @@ def test_retries_then_gives_up_without_raising():
         calls["n"] += 1
         raise RuntimeError("provider down")
 
-    c = LLMExtractor(flaky, max_retries=2).score_parameter("core_skill_depth", CV, {})
+    ex = LLMExtractor(flaky, max_retries=2); ex.backoff = 0
+    c = ex.score_parameter("core_skill_depth", CV, {})
     assert calls["n"] == 3 and c.value == 0.0
 
 
@@ -106,3 +107,31 @@ def test_no_sdk_imported_at_module_load():
         sys.modules.pop(mod, None)
     importlib.reload(importlib.import_module("rubric.llm"))
     assert "anthropic" not in sys.modules and "openai" not in sys.modules
+
+
+def test_batched_scoring_matches_single_and_verifies_spans():
+    """One request for several criteria gives the same claims as one per criterion; spans still verified in code."""
+    import json as _json
+    from rubric.llm import LLMExtractor, SCORE_MANY_PROMPT
+    from rubric.evidence import verify
+    cv = "Senior Engineer | X | 2020-01 to present\nDesigned the sharded ledger. Owned reconciliation for 40M transactions.\n"
+    calls = []
+
+    def complete(prompt):
+        calls.append(prompt)
+        if "Criteria:" in prompt:   # the batched prompt
+            keys = [l.split(":")[0][2:] for l in prompt.split("Criteria:\n")[1].split("\n\nScore each")[0].splitlines()]
+            return _json.dumps({k: {"score": 70, "span": "Designed the sharded ledger.", "confidence": 0.8}
+                                for k in keys[:-1]} | {keys[-1]: {"score": 50, "span": "Made up sentence.", "confidence": 0.9}})
+        return _json.dumps({"score": 70, "span": "Designed the sharded ledger.", "confidence": 0.8})
+    ex = LLMExtractor(complete, batch=5)
+    keys = ["be_system_design", "be_data_modelling", "be_api_contract_discipline", "fin_ledger_and_reconciliation"]
+    claims = ex.score_parameters(keys, cv, {})
+    assert len(calls) == 1 and [c.parameter for c in claims] == keys
+    kept, dropped = verify(claims, cv)
+    assert [c.parameter for c in dropped] == ["fin_ledger_and_reconciliation"], "a rewritten span is still dropped in code"
+    assert all(c.value == 70 for c in kept)
+    single = LLMExtractor(complete, batch=0)
+    assert [c.value for c in single.score_parameters(keys, cv, {})] == [70, 70, 70, 70]
+    assert len(calls) == 5
+    assert "{cv}" not in SCORE_MANY_PROMPT.format(criteria="x", cv="y")
