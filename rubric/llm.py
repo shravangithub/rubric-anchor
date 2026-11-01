@@ -247,6 +247,17 @@ def anthropic_adapter(api_key: str, model: str = "claude-sonnet-5-5",
     return complete
 
 
+GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/"
+
+
+def gemini_adapter(api_key: str, model: str = "gemini-2.5-flash", max_tokens: int = 1024,
+                   temperature: float = 0.0) -> Complete:
+    """Google Gemini through its OpenAI-compatible endpoint. Requires `pip install openai`.
+    A key comes from Google AI Studio (aistudio.google.com -> Get API key)."""
+    return openai_adapter(api_key, model=model, base_url=GEMINI_BASE_URL,
+                          max_tokens=max_tokens, temperature=temperature)
+
+
 def openai_adapter(api_key: str, model: str = "gpt-4o-mini",
                    base_url: str | None = None, max_tokens: int = 1024,
                    temperature: float = 0.0) -> Complete:

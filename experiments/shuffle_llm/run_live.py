@@ -10,6 +10,7 @@ results.json in the same shape, so analyse.py can read any of them.
     ANTHROPIC_API_KEY=... python experiments/shuffle_llm/run_live.py --provider anthropic --model claude-sonnet-5-5
     ANTHROPIC_API_KEY=... python experiments/shuffle_llm/run_live.py --provider anthropic --model claude-haiku-5-5
     OPENAI_API_KEY=...    python experiments/shuffle_llm/run_live.py --provider openai --model gpt-5-mini
+    GEMINI_API_KEY=...    python experiments/shuffle_llm/run_live.py --provider gemini --model gemini-2.5-flash
     python experiments/shuffle_llm/analyse.py --results experiments/shuffle_llm/results-claude-sonnet-5-5.json
 
 Cost: five requests of about 1,500 input tokens each per model.
@@ -58,14 +59,18 @@ def parse(text: str) -> list[str]:
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("--provider", choices=["anthropic", "openai"], required=True)
+    ap.add_argument("--provider", choices=["anthropic", "openai", "gemini"], required=True)
     ap.add_argument("--model", required=True)
     ap.add_argument("--temperature", type=float, default=1.0)
     args = ap.parse_args(argv)
-    from rubric.llm import anthropic_adapter, openai_adapter
+    from rubric.llm import anthropic_adapter, openai_adapter, gemini_adapter
     if args.provider == "anthropic":
         complete = anthropic_adapter(os.environ["ANTHROPIC_API_KEY"], model=args.model,
                                      max_tokens=200, temperature=args.temperature)
+    elif args.provider == "gemini":
+        # Gemini 2.5 thinks before it answers and the thinking counts against max_tokens
+        complete = gemini_adapter(os.environ["GEMINI_API_KEY"], model=args.model,
+                                  max_tokens=4000, temperature=args.temperature)
     else:
         complete = openai_adapter(os.environ["OPENAI_API_KEY"], model=args.model, max_tokens=200,
                                   temperature=args.temperature, base_url=os.environ.get("OPENAI_BASE_URL"))
