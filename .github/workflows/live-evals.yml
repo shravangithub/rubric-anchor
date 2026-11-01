@@ -19,8 +19,8 @@ on:
         description: "Scoring repeats per CV for the stability check"
         default: "2"
       sample:
-        description: "How many of the 10 sample CVs to score (each costs ~20 scorings)"
-        default: "3"
+        description: "How many of the 10 sample CVs to score (each costs ~15 scorings, ~60 requests)"
+        default: "2"
 jobs:
   live:
     runs-on: ubuntu-latest
@@ -45,11 +45,12 @@ jobs:
             provider=$1; models=$2
             for m in $(echo "$models" | tr ',' ' '); do
               echo "== $provider / $m"
+              # the shuffle first: five requests, and the headline
+              python experiments/shuffle_llm/run_live.py --provider $provider --model $m || echo "shuffle FAILED for $m"
+              [ -f experiments/shuffle_llm/results-$m.json ] && python experiments/shuffle_llm/analyse.py --results experiments/shuffle_llm/results-$m.json | tee live/shuffle-$m.txt
               python evals/run_evals.py --cvs examples/sample_cvs --provider $provider --model $m \
                 --runs ${{ github.event.inputs.runs }} --sample ${{ github.event.inputs.sample }} --variants pairs \
                 --out live/eval-$m.json || echo "eval FAILED for $m (see report)"
-              python experiments/shuffle_llm/run_live.py --provider $provider --model $m
-              python experiments/shuffle_llm/analyse.py --results experiments/shuffle_llm/results-$m.json | tee live/shuffle-$m.txt
             done
           }
           [ -n "${{ github.event.inputs.anthropic_models }}" ] && [ -n "$ANTHROPIC_API_KEY" ] && run_models anthropic "${{ github.event.inputs.anthropic_models }}"
