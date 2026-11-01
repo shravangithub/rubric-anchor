@@ -82,10 +82,15 @@ class SwapResult:
     base: float
     swapped: float
     parameter_deltas: dict[str, float] = field(default_factory=dict)
+    unanswered: int = 0       # criteria the model did not answer on either side
 
     @property
     def delta(self) -> float:
         return round(self.swapped - self.base, 2)
+
+    @property
+    def conclusive(self) -> bool:
+        return self.unanswered == 0
 
 
 @dataclass
@@ -96,17 +101,22 @@ class SwapReport:
 
     @property
     def worst(self) -> float:
-        return max((abs(r.delta) for r in self.results), default=0.0)
+        return max((abs(r.delta) for r in self.results if r.conclusive), default=0.0)
+
+    @property
+    def inconclusive(self) -> list[str]:
+        return [r.variant for r in self.results if not r.conclusive]
 
     @property
     def passed(self) -> bool:
-        return self.worst <= self.tolerance
+        """Only conclusive variants count; an incomplete scoring is neither pass nor fail."""
+        return self.worst <= self.tolerance and not self.inconclusive
 
     def as_dict(self) -> dict:
         return {"candidate_id": self.candidate_id, "tolerance": self.tolerance,
-                "passed": self.passed, "worst_delta": self.worst,
+                "passed": self.passed, "worst_delta": self.worst, "inconclusive": self.inconclusive,
                 "variants": [{"variant": r.variant, "base": r.base,
-                              "swapped": r.swapped, "delta": r.delta,
+                              "swapped": r.swapped, "delta": r.delta, "unanswered": r.unanswered,
                               "moved_parameters": {k: v for k, v in r.parameter_deltas.items() if v}}
                              for r in self.results]}
 
@@ -120,5 +130,6 @@ def swap_test(candidate_id: str, resume: str, job: dict, extractor,
         alt = score_candidate(candidate_id, fn(resume), job, extractor, **kw)
         deltas = {k: round(alt.scores.get(k, 0.0) - base.scores.get(k, 0.0), 2)
                   for k in set(base.scores) | set(alt.scores)}
-        rep.results.append(SwapResult(name, base.composite, alt.composite, deltas))
+        rep.results.append(SwapResult(name, base.composite, alt.composite, deltas,
+                                      len(base.unanswered) + len(alt.unanswered)))
     return rep

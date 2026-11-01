@@ -22,7 +22,7 @@ import json
 import re
 from typing import Callable, Protocol
 
-from .evidence import Claim
+from .evidence import Claim, NO_ANSWER
 
 Complete = Callable[[str], str]
 
@@ -257,10 +257,20 @@ class LLMExtractor:
         for i in range(0, len(keys), self.batch):
             chunk = keys[i:i + self.batch]
             crit = "\n".join(f"- {k}: {self._meta(k)[0]} \u2014 {self._meta(k)[1]}" for k in chunk)
-            raw = self._ask(SCORE_MANY_PROMPT.format(criteria=crit, cv=resume), {})
-            raw = raw if isinstance(raw, dict) else {}
+            raw = {}
+            # a chunk that comes back empty or mostly missing is asked again:
+            # a truncated or unparseable reply must not read as "no evidence"
+            for _ in range(self.max_retries + 1):
+                got = self._ask(SCORE_MANY_PROMPT.format(criteria=crit, cv=resume), {})
+                got = got if isinstance(got, dict) else {}
+                if sum(1 for k in chunk if isinstance(got.get(k), dict)) >= max(1, len(chunk) // 2):
+                    raw = got
+                    break
             for k in chunk:
-                v = raw.get(k) if isinstance(raw.get(k), dict) else {}
+                if not isinstance(raw.get(k), dict):
+                    out.append(Claim(parameter=k, value=0.0, span="", confidence=0.0, reason=NO_ANSWER))
+                    continue
+                v = raw[k]
                 try:
                     score = max(0.0, min(100.0, float(v.get("score", 0))))
                 except (TypeError, ValueError):
@@ -278,6 +288,8 @@ class LLMExtractor:
         raw = self._ask(SCORE_PROMPT.format(label=label, definition=definition,
                                             cv=resume), {})
         score, span, conf = 0.0, "", 0.0
+        if not isinstance(raw, dict) or not raw:
+            return Claim(parameter=key, value=0.0, span="", confidence=0.0, reason=NO_ANSWER)
         if isinstance(raw, dict):
             try:
                 score = max(0.0, min(100.0, float(raw.get("score", 0))))

@@ -22,6 +22,11 @@ class Claim:
         return asdict(self)
 
 
+#: the model never answered for this criterion (empty or unparseable reply after retries).
+#: It scores 0 like any unsupported claim, but the record says why, and the eval
+#: report treats a scoring that contains one as incomplete rather than as evidence.
+NO_ANSWER = "model gave no answer for this criterion"
+
 _WS = re.compile(r"\s+")
 
 
@@ -51,9 +56,10 @@ def verify(claims: list[Claim], source: str) -> tuple[list[Claim], list[Claim]]:
             kept.append(c)
         else:
             c.verified = False
-            c.reason = ("span too short to be meaningful"
-                        if len(normalise(c.span)) < 12
-                        else "span does not appear in the source document")
+            if c.reason != NO_ANSWER:        # an unanswered criterion keeps its own reason
+                c.reason = ("span too short to be meaningful"
+                            if len(normalise(c.span)) < 12
+                            else "span does not appear in the source document")
             dropped.append(c)
     return kept, dropped
 

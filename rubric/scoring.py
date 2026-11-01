@@ -13,7 +13,7 @@ from . import parameters as P
 from .packs import NEUTRAL_IF_ABSENT, build_rubric, INDUSTRY_PACKS
 from .roles import ROLE_PACKS
 from . import levels as LV
-from .evidence import Claim, verify, evidence_ratio
+from .evidence import NO_ANSWER, Claim, verify, evidence_ratio
 from .guards import assert_no_protected_attributes, assert_single_candidate
 from .redact import redact
 from .injection import scan, flagged_lines, span_in_flagged
@@ -69,7 +69,14 @@ class Result:
                 "injection": self.injection, "redaction": self.redaction,
                 "provenance": self.provenance,
                 "dropped_claims": [c.as_dict() for c in self.dropped],
+                "unanswered": self.unanswered,
                 "audit": self.audit}
+
+    @property
+    def unanswered(self) -> list[str]:
+        """Criteria the model never answered (empty or unparseable reply after retries).
+        They score 0, and a result with any is incomplete, not evidence."""
+        return [c.parameter for c in self.dropped if c.reason == NO_ANSWER]
 
 
 def months_between(start: str, end: str, today: date) -> int:
@@ -225,6 +232,10 @@ def score_candidate(candidate_id: str, resume: str, job: dict,
     else:
         mclaims = [extractor.score_parameter(k, resume, job) for k in model_keys]
     mkept, mdropped = verify(mclaims, resume)
+    _na = [c.parameter for c in mdropped if c.reason == NO_ANSWER]
+    if _na:
+        r.audit.append({"step": "unanswered", "criteria": _na})
+        r.reasons.append(f"the model gave no answer for {len(_na)} criteria - score incomplete, rerun before relying on it")
     before = len(r.dropped)
     mkept = _quarantine(mkept)
     for c in r.dropped[before:]:

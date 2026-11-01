@@ -62,6 +62,7 @@ class Stability:
                 "composites": self.composites, "low": self.low, "median": self.median,
                 "high": self.high, "spread": self.spread, "stable": self.stable,
                 "tolerance": self.tolerance,
+                "unanswered": sum(len(r.unanswered) for r in self.results),
                 "unstable_parameters": {k: v for k, v in self.parameter_spread.items()
                                         if v > self.tolerance}}
 
