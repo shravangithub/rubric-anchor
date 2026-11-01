@@ -74,23 +74,34 @@ def main(argv=None):
     else:
         complete = openai_adapter(os.environ["OPENAI_API_KEY"], model=args.model, max_tokens=200,
                                   temperature=args.temperature, base_url=os.environ.get("OPENAI_BASE_URL"))
-    rankings, raw = {}, {}
-    for k, order in ORDERS.items():
-        text = complete(prompt(order.split()))
-        raw[k] = text.strip()
-        r = parse(text)
-        if len(r) != 12:
-            print(f"run {k}: could not parse 12 letters from: {text.strip()[:120]}", file=sys.stderr)
-        rankings[k] = " ".join(r)
-        print(f"run {k}: {rankings[k]}")
+    path = os.path.join(HERE, f"results-{args.model}.json")
+    # resume: a run that died on a rate limit keeps what it got; rerun fills the gaps
+    prev = json.load(open(path)) if os.path.exists(path) else {}
+    rankings, raw = dict(prev.get("rankings", {})), dict(prev.get("raw", {}))
     out = {"experiment": "llm-shuffle-stability", "date": date.today().isoformat(),
            "design": "Same twelve CVs, same five orders and prompt as results.json; one fresh request per run.",
            "model": f"{args.model} (temperature {args.temperature})", "orders": ORDERS,
            "rankings": rankings, "raw": raw,
            "caveats": ["Five runs. A sixth could add a swing this one missed.",
                        "Synthetic CVs written to be close in strength; a wide-spread pool would look more stable."]}
-    path = os.path.join(HERE, f"results-{args.model}.json")
-    json.dump(out, open(path, "w"), indent=2)
+    for k, order in ORDERS.items():
+        if len(rankings.get(k, "").split()) == 12:
+            print(f"run {k}: {rankings[k]}  (kept from an earlier run)")
+            continue
+        try:
+            text = complete(prompt(order.split()))
+        except Exception as e:
+            print(f"run {k}: FAILED {type(e).__name__}: {str(e)[:100]}", file=sys.stderr)
+            json.dump(out, open(path, "w"), indent=2)
+            print(f"-> {path} (partial: {sum(1 for v in rankings.values() if len(v.split()) == 12)} of 5 runs)")
+            sys.exit(1)
+        raw[k] = text.strip()
+        r = parse(text)
+        if len(r) != 12:
+            print(f"run {k}: could not parse 12 letters from: {text.strip()[:120]}", file=sys.stderr)
+        rankings[k] = " ".join(r)
+        print(f"run {k}: {rankings[k]}")
+        json.dump(out, open(path, "w"), indent=2)
     print(f"-> {path}")
 
 
