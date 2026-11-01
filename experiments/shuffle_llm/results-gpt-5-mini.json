@@ -1,0 +1,26 @@
+{
+  "experiment": "llm-shuffle-stability",
+  "date": "2026-11-01",
+  "design": "Same twelve CVs, same five orders and prompt as results.json; one fresh request per run.",
+  "model": "gpt-5-mini (temperature 1.0, default reasoning)",
+  "orders": {
+    "1": "A B C D E F G H I J K L",
+    "2": "G J D L A F K C H B E I",
+    "3": "L K I H G F E D C B A J",
+    "4": "C F A I L D G B K J E H",
+    "5": "H E B K J G C L F D A I"
+  },
+  "rankings": {
+    "1": "C A G J B H D F I K E L",
+    "2": "C A G J D B H I F E K L",
+    "3": "C A G J B H E D I F K L",
+    "4": "A C G B J H D F I E L K",
+    "5": "A C G J B H E D F K I L"
+  },
+  "raw": {},
+  "caveats": [
+    "Five runs. A sixth could add a swing this one missed.",
+    "Synthetic CVs written to be close in strength; a wide-spread pool would look more stable.",
+    "Rankings copied from the live-evals run 41306805317 log (1 Nov 2026); the runner's results file was lost when the job was cancelled after the shuffle."
+  ]
+}
