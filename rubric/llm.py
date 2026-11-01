@@ -179,6 +179,8 @@ class LLMExtractor:
         #: N = up to N criteria per request, one candidate still. Spans are
         #: verified the same way. Use it when a run is cost- or rate-bound.
         self.batch = batch
+        #: seconds before the first retry; doubles each time, capped at 30
+        self.backoff = 3.0
         #: Recorded in every Result.provenance. Adapters set `complete.model`.
         self.model_id = model_id or getattr(complete, "model", None)
         self.prompt_version = prompt_version()
@@ -193,7 +195,7 @@ class LLMExtractor:
             try:
                 last = _json(self.complete(prompt), default)
             except Exception:                      # provider hiccup or rate limit -> wait, retry
-                time.sleep(min(30, 3 * (2 ** attempt)))
+                time.sleep(min(30, self.backoff * (2 ** attempt)))
                 continue
             if last != default:
                 return last

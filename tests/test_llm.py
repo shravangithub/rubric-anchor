@@ -77,7 +77,8 @@ def test_retries_then_gives_up_without_raising():
         calls["n"] += 1
         raise RuntimeError("provider down")
 
-    c = LLMExtractor(flaky, max_retries=2).score_parameter("core_skill_depth", CV, {})
+    ex = LLMExtractor(flaky, max_retries=2); ex.backoff = 0
+    c = ex.score_parameter("core_skill_depth", CV, {})
     assert calls["n"] == 3 and c.value == 0.0
 
 
