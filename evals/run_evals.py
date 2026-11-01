@@ -126,6 +126,19 @@ def main(argv=None):
     stab, cf, pol = sorted(got["stab"], key=key), sorted(got["cf"], key=key), sorted(got["pol"], key=key)
     inj = sorted(got["inj"], key=lambda d: (d["candidate_id"], d["plant"]))
 
+    # The noise floor: how much the composite moves between two scorings of the
+    # SAME text on this model. A swap or polish delta inside it is sampling
+    # noise, not an effect; the tolerance is the larger of the one asked for
+    # and twice that floor. Models that refuse temperature 0 have a real floor.
+    noise = max([x["spread"] for x in stab], default=0.0)
+    eff_tol = max(args.tolerance, round(2 * noise, 2))
+    for c in cf:
+        for v in c["variants"]:
+            v["within_noise"] = abs(v["delta"]) <= eff_tol
+        c["passed_at_noise_floor"] = (not c.get("inconclusive")) and all(v["within_noise"] for v in c["variants"])
+    for p in pol:
+        p["passed_at_noise_floor"] = (not p.get("unanswered")) and not p["fact_leak"] and abs(p["delta"]) <= eff_tol
+
     if not stab:
         sys.exit("no CV completed; see the error above")
     probe = score_candidate("probe", open(files[0]).read(), JOB, NullExtractor(), **kw)
@@ -133,14 +146,17 @@ def main(argv=None):
                              "prompt_version": getattr(ex, "prompt_version", None)})
     report = {
         "provenance": {**probe.provenance, "package": __version__},
-        "settings": {"runs": args.runs, "tolerance": args.tolerance, "batch": args.batch,
+        "settings": {"runs": args.runs, "tolerance": args.tolerance, "noise_floor": noise,
+                     "effective_tolerance": eff_tol, "batch": args.batch,
                      "variants": sorted(variants), "role": args.role, "level": args.level, "cvs": len(files)},
         "stability": {"stable": sum(s["stable"] for s in stab), "of": len(stab),
                       "max_spread": max([s["spread"] for s in stab], default=0), "detail": stab},
-        "counterfactual": {"passed": sum(c["passed"] for c in cf), "of": len(cf),
+        "counterfactual": {"passed": sum(c["passed_at_noise_floor"] for c in cf), "of": len(cf),
+                           "passed_strict": sum(c["passed"] for c in cf),
                            "worst_delta": max([c["worst_delta"] for c in cf], default=0),
                            "inconclusive": sum(len(c.get("inconclusive", [])) for c in cf), "detail": cf},
-        "polish": {"passed": sum(p["passed"] for p in pol), "of": len(pol),
+        "polish": {"passed": sum(p["passed_at_noise_floor"] for p in pol), "of": len(pol),
+                   "passed_strict": sum(p["passed"] for p in pol),
                    "worst_delta": max([abs(p["delta"]) for p in pol if not p.get("unanswered")], default=0),
                    "inconclusive": sum(1 for p in pol if p.get("unanswered")),
                    "fact_leaks": sum(1 for p in pol if p["fact_leak"]), "detail": pol},
@@ -153,7 +169,7 @@ def main(argv=None):
                       and report["injection"]["caught"] == len(inj))
     json.dump(report, open(args.out, "w"), indent=2)
     print(f"stability      {report['stability']['stable']}/{len(stab)} stable "
-          f"(max spread {report['stability']['max_spread']})")
+          f"(max spread {report['stability']['max_spread']}; tolerance used {eff_tol})")
     print(f"counterfactual {report['counterfactual']['passed']}/{len(cf)} passed "
           f"(worst delta {report['counterfactual']['worst_delta']}, inconclusive variants {report['counterfactual']['inconclusive']})")
     print(f"polish         {report['polish']['passed']}/{len(pol)} passed "
