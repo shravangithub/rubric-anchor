@@ -59,11 +59,14 @@ jobs:
           true
           cp experiments/shuffle_llm/results-*.json live/ 2>/dev/null || true
           ls -la live
+          # the reports, in the log too: artifacts are not reachable from everywhere
+          for f in live/*.json; do echo "=== $f"; python -c "import json,sys; print(json.dumps(json.load(open(sys.argv[1]))))" "$f"; done
       - uses: actions/upload-artifact@v4
         with:
           name: live-evals-${{ github.run_number }}
           path: live/
       - name: Open a PR with the shuffle results files
+        continue-on-error: true
         uses: peter-evans/create-pull-request@v6
         with:
           branch: live-results-${{ github.run_number }}
