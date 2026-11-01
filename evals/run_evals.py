@@ -61,7 +61,7 @@ def extractor(args):
     if args.provider == "none":
         return NullExtractor()
     from rubric.llm import LLMExtractor
-    return LLMExtractor(complete_fn(args))
+    return LLMExtractor(complete_fn(args), batch=args.batch)
 
 
 def rewriter(args):
@@ -82,6 +82,9 @@ def main(argv=None):
     ap.add_argument("--role", default="backend")
     ap.add_argument("--level", default="mid")
     ap.add_argument("--today", default=date.today().isoformat())
+    ap.add_argument("--sample", type=int, default=0, help="only the first N CVs (live runs are expensive)")
+    ap.add_argument("--batch", type=int, default=20, help="criteria per request for a live model; 0 = one each")
+    ap.add_argument("--variants", default="all", help="'all' proxy variants, or 'pairs' for one of each pair")
     args = ap.parse_args(argv)
 
     ex = extractor(args)
@@ -90,6 +93,10 @@ def main(argv=None):
     files = sorted(glob.glob(os.path.join(args.cvs, "*.txt")))
     if not files:
         sys.exit(f"no .txt CVs in {args.cvs}")
+    if args.sample:
+        files = files[:args.sample]
+    variants = PROXY_VARIANTS if args.variants == "all" else {
+        k: v for k, v in PROXY_VARIANTS.items() if k in ("pronouns", "lang_a", "lang_b", "hobby_a", "hobby_c", "career_break")}
 
     stab, cf, pol, inj = [], [], [], []
     for f in files:
@@ -97,7 +104,7 @@ def main(argv=None):
         stab.append(score_repeated(cid, cv, JOB, ex, runs=args.runs,
                                    tolerance=args.tolerance, **kw).as_dict())
         cf.append(swap_test(cid, cv + "\nHe led the on-call rota.\n", JOB, ex,
-                            PROXY_VARIANTS, tolerance=args.tolerance, **kw).as_dict())
+                            variants, tolerance=args.tolerance, **kw).as_dict())
         pol.append(polish_test(cid, cv, JOB, ex, rw, tolerance=args.tolerance, **kw).as_dict())
         for plant in PLANTS:
             r = score_candidate(cid, cv + "\n" + plant + "\n", JOB, ex, **kw)
@@ -107,8 +114,8 @@ def main(argv=None):
     probe = score_candidate("probe", open(files[0]).read(), JOB, ex, **kw)
     report = {
         "provenance": {**probe.provenance, "package": __version__},
-        "settings": {"runs": args.runs, "tolerance": args.tolerance,
-                     "role": args.role, "level": args.level, "cvs": len(files)},
+        "settings": {"runs": args.runs, "tolerance": args.tolerance, "batch": args.batch,
+                     "variants": sorted(variants), "role": args.role, "level": args.level, "cvs": len(files)},
         "stability": {"stable": sum(s["stable"] for s in stab), "of": len(stab),
                       "max_spread": max(s["spread"] for s in stab), "detail": stab},
         "counterfactual": {"passed": sum(c["passed"] for c in cf), "of": len(cf),
