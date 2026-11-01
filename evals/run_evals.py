@@ -85,6 +85,7 @@ def main(argv=None):
     ap.add_argument("--sample", type=int, default=0, help="only the first N CVs (live runs are expensive)")
     ap.add_argument("--batch", type=int, default=20, help="criteria per request for a live model; 0 = one each")
     ap.add_argument("--variants", default="all", help="'all' proxy variants, or 'pairs' for one of each pair")
+    ap.add_argument("--workers", type=int, default=8, help="checks run side by side; 1 = one at a time")
     args = ap.parse_args(argv)
 
     ex = extractor(args)
@@ -98,22 +99,31 @@ def main(argv=None):
     variants = PROXY_VARIANTS if args.variants == "all" else {
         k: v for k, v in PROXY_VARIANTS.items() if k in ("pronouns", "lang_a", "lang_b", "hobby_a", "hobby_c", "career_break")}
 
-    stab, cf, pol, inj = [], [], [], []
+    # Every check is independent, so they run side by side: a slow-thinking
+    # model takes minutes instead of an hour. --workers 1 keeps them serial.
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    tasks = []
     for f in files:
-        try:
-            cid, cv = os.path.splitext(os.path.basename(f))[0], open(f).read()
-            stab.append(score_repeated(cid, cv, JOB, ex, runs=args.runs,
-                                       tolerance=args.tolerance, **kw).as_dict())
-            cf.append(swap_test(cid, cv + "\nHe led the on-call rota.\n", JOB, ex,
-                                variants, tolerance=args.tolerance, **kw).as_dict())
-            pol.append(polish_test(cid, cv, JOB, ex, rw, tolerance=args.tolerance, **kw).as_dict())
-            for plant in PLANTS:
-                r = score_candidate(cid, cv + "\n" + plant + "\n", JOB, ex, **kw)
-                inj.append({"candidate_id": cid, "plant": plant[:40],
-                            "caught": bool(r.injection) and r.needs_human})
-
-        except Exception as e:
-            print(f"stopped at {f}: {type(e).__name__}: {str(e)[:120]}", file=sys.stderr); break
+        cid, cv = os.path.splitext(os.path.basename(f))[0], open(f).read()
+        tasks.append(("stab", cid, lambda cid=cid, cv=cv: score_repeated(cid, cv, JOB, ex, runs=args.runs, tolerance=args.tolerance, **kw).as_dict()))
+        tasks.append(("cf", cid, lambda cid=cid, cv=cv: swap_test(cid, cv + "\nHe led the on-call rota.\n", JOB, ex, variants, tolerance=args.tolerance, **kw).as_dict()))
+        tasks.append(("pol", cid, lambda cid=cid, cv=cv: polish_test(cid, cv, JOB, ex, rw, tolerance=args.tolerance, **kw).as_dict()))
+        for plant in PLANTS:
+            tasks.append(("inj", cid, lambda cid=cid, cv=cv, plant=plant: (lambda r: {"candidate_id": cid, "plant": plant[:40], "caught": bool(r.injection) and r.needs_human})(score_candidate(cid, cv + "\n" + plant + "\n", JOB, ex, **kw))))
+    got = {"stab": [], "cf": [], "pol": [], "inj": []}
+    failed = []
+    with ThreadPoolExecutor(max_workers=max(1, args.workers)) as pool:
+        futs = {pool.submit(fn): (kind, cid) for kind, cid, fn in tasks}
+        for fut in as_completed(futs):
+            kind, cid = futs[fut]
+            try:
+                got[kind].append(fut.result())
+            except Exception as e:
+                failed.append({"check": kind, "candidate_id": cid, "error": f"{type(e).__name__}: {str(e)[:120]}"})
+                print(f"{kind} failed for {cid}: {type(e).__name__}: {str(e)[:120]}", file=sys.stderr)
+    key = lambda d: d.get("candidate_id", "")
+    stab, cf, pol = sorted(got["stab"], key=key), sorted(got["cf"], key=key), sorted(got["pol"], key=key)
+    inj = sorted(got["inj"], key=lambda d: (d["candidate_id"], d["plant"]))
 
     if not stab:
         sys.exit("no CV completed; see the error above")
@@ -125,15 +135,16 @@ def main(argv=None):
         "settings": {"runs": args.runs, "tolerance": args.tolerance, "batch": args.batch,
                      "variants": sorted(variants), "role": args.role, "level": args.level, "cvs": len(files)},
         "stability": {"stable": sum(s["stable"] for s in stab), "of": len(stab),
-                      "max_spread": max(s["spread"] for s in stab), "detail": stab},
+                      "max_spread": max([s["spread"] for s in stab], default=0), "detail": stab},
         "counterfactual": {"passed": sum(c["passed"] for c in cf), "of": len(cf),
-                           "worst_delta": max(c["worst_delta"] for c in cf), "detail": cf},
+                           "worst_delta": max([c["worst_delta"] for c in cf], default=0), "detail": cf},
         "polish": {"passed": sum(p["passed"] for p in pol), "of": len(pol),
-                   "worst_delta": max(abs(p["delta"]) for p in pol),
+                   "worst_delta": max([abs(p["delta"]) for p in pol], default=0),
                    "fact_leaks": sum(1 for p in pol if p["fact_leak"]), "detail": pol},
         "injection": {"caught": sum(i["caught"] for i in inj), "of": len(inj), "detail": inj},
+        "failed_checks": failed,
     }
-    report["pass"] = (report["stability"]["stable"] == len(stab)
+    report["pass"] = (not failed and report["stability"]["stable"] == len(stab)
                       and report["counterfactual"]["passed"] == len(cf)
                       and report["polish"]["passed"] == len(pol)
                       and report["injection"]["caught"] == len(inj))

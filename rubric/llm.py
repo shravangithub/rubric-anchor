@@ -352,10 +352,10 @@ def openai_adapter(api_key: str, model: str = "gpt-4o-mini",
     # refusal rather than keeping a model list here.
     kw = {"max_tokens": max_tokens, "temperature": temperature}
 
-    def _create():
+    def _create(prompt: str):
         for _ in range(3):
             try:
-                return client.chat.completions.create(model=model, messages=[{"role": "user", "content": prompt_box[0]}], **kw)
+                return client.chat.completions.create(model=model, messages=[{"role": "user", "content": prompt}], **dict(kw))
             except Exception as e:
                 msg = str(e)
                 if "max_tokens" in msg and "max_tokens" in kw:
@@ -364,12 +364,10 @@ def openai_adapter(api_key: str, model: str = "gpt-4o-mini",
                     kw.pop("temperature")
                 else:
                     raise
-        return client.chat.completions.create(model=model, messages=[{"role": "user", "content": prompt_box[0]}], **kw)
-    prompt_box = [""]
+        return client.chat.completions.create(model=model, messages=[{"role": "user", "content": prompt}], **dict(kw))
 
     def complete(prompt: str) -> str:
-        prompt_box[0] = prompt
-        r = _with_backoff(_create)
+        r = _with_backoff(lambda: _create(prompt))
         return r.choices[0].message.content or ""
     complete.model = model
     return complete
