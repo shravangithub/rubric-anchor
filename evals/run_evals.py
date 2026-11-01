@@ -50,10 +50,11 @@ JOB = {"job_family_titles": ["engineer", "sre", "qa", "manager", "director",
 def complete_fn(args):
     from rubric.llm import anthropic_adapter, openai_adapter, gemini_adapter
     if args.provider == "anthropic":
-        return anthropic_adapter(os.environ["ANTHROPIC_API_KEY"], model=args.model, max_tokens=4000)
+        return anthropic_adapter(os.environ["ANTHROPIC_API_KEY"], model=args.model, max_tokens=8000)
     if args.provider == "gemini":
-        return gemini_adapter(os.environ["GEMINI_API_KEY"], model=args.model, max_tokens=4000)
-    return openai_adapter(os.environ["OPENAI_API_KEY"], model=args.model, max_tokens=4000,
+        return gemini_adapter(os.environ["GEMINI_API_KEY"], model=args.model, max_tokens=16000)
+    # reasoning models spend tokens before the answer; a 20-criterion reply needs room
+    return openai_adapter(os.environ["OPENAI_API_KEY"], model=args.model, max_tokens=16000,
                           base_url=os.environ.get("OPENAI_BASE_URL"))
 
 
@@ -137,9 +138,11 @@ def main(argv=None):
         "stability": {"stable": sum(s["stable"] for s in stab), "of": len(stab),
                       "max_spread": max([s["spread"] for s in stab], default=0), "detail": stab},
         "counterfactual": {"passed": sum(c["passed"] for c in cf), "of": len(cf),
-                           "worst_delta": max([c["worst_delta"] for c in cf], default=0), "detail": cf},
+                           "worst_delta": max([c["worst_delta"] for c in cf], default=0),
+                           "inconclusive": sum(len(c.get("inconclusive", [])) for c in cf), "detail": cf},
         "polish": {"passed": sum(p["passed"] for p in pol), "of": len(pol),
-                   "worst_delta": max([abs(p["delta"]) for p in pol], default=0),
+                   "worst_delta": max([abs(p["delta"]) for p in pol if not p.get("unanswered")], default=0),
+                   "inconclusive": sum(1 for p in pol if p.get("unanswered")),
                    "fact_leaks": sum(1 for p in pol if p["fact_leak"]), "detail": pol},
         "injection": {"caught": sum(i["caught"] for i in inj), "of": len(inj), "detail": inj},
         "failed_checks": failed,
@@ -152,9 +155,9 @@ def main(argv=None):
     print(f"stability      {report['stability']['stable']}/{len(stab)} stable "
           f"(max spread {report['stability']['max_spread']})")
     print(f"counterfactual {report['counterfactual']['passed']}/{len(cf)} passed "
-          f"(worst delta {report['counterfactual']['worst_delta']})")
+          f"(worst delta {report['counterfactual']['worst_delta']}, inconclusive variants {report['counterfactual']['inconclusive']})")
     print(f"polish         {report['polish']['passed']}/{len(pol)} passed "
-          f"(worst delta {report['polish']['worst_delta']}, fact leaks {report['polish']['fact_leaks']})")
+          f"(worst delta {report['polish']['worst_delta']}, fact leaks {report['polish']['fact_leaks']}, inconclusive {report['polish']['inconclusive']})")
     print(f"injection      {report['injection']['caught']}/{len(inj)} caught")
     print(f"\n{'PASS' if report['pass'] else 'FAIL'} -> {args.out}")
     return 0 if report["pass"] else 1

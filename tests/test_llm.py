@@ -135,3 +135,41 @@ def test_batched_scoring_matches_single_and_verifies_spans():
     assert [c.value for c in single.score_parameters(keys, cv, {})] == [70, 70, 70, 70]
     assert len(calls) == 5
     assert "{cv}" not in SCORE_MANY_PROMPT.format(criteria="x", cv="y")
+
+
+def test_unanswered_chunk_is_retried_then_marked_not_zeroed():
+    """An empty or truncated batched reply is asked again; if it stays empty, the
+    criteria are recorded as unanswered (a reason, not silent zeros) and the
+    swap test calls the comparison inconclusive instead of failed."""
+    import json as _json
+    from rubric.llm import LLMExtractor
+    from rubric.evidence import NO_ANSWER
+    from rubric.counterfactual import swap_test, PRONOUN_SWAP
+    from rubric import score_candidate
+    from datetime import date
+    cv = "Senior Engineer | X | 2020-01 to present\nDesigned the sharded ledger.\n"
+    n = {"calls": 0}
+
+    def flaky(prompt):
+        n["calls"] += 1
+        if "Criteria:" in prompt:
+            return "" if n["calls"] <= 9 else _json.dumps({"be_system_design": {"score": 70, "span": "Designed the sharded ledger.", "confidence": .8},
+                                                              "be_data_modelling": {"score": 50, "span": "Designed the sharded ledger.", "confidence": .8}})
+        return "[]" if "employment" in prompt.lower() else "{}"
+    ex = LLMExtractor(flaky, batch=20, max_retries=2); ex.backoff = 0
+    claims = ex.score_parameters(["be_system_design", "be_data_modelling"], cv, {})
+    assert all(c.reason == NO_ANSWER for c in claims), "three empty replies -> unanswered, not 0 with no reason"
+    claims2 = ex.score_parameters(["be_system_design", "be_data_modelling"], cv, {})
+    assert [c.value for c in claims2] == [70, 50], "the retry budget is per chunk; the next chunk answers"
+
+    class Dead:
+        model_id = "dead"; prompt_version = "p"
+        def employment(self, r): return []
+        def eligibility(self, r): return {}
+        def score_parameters(self, keys, r, rubric):
+            from rubric.evidence import Claim
+            return [Claim(k, 0.0, "", 0.0, reason=NO_ANSWER) for k in keys]
+    r = score_candidate("c", cv, {"job_family_titles": ["engineer"]}, Dead(), today=date(2026, 11, 1), role="backend")
+    assert r.unanswered and any("no answer" in x for x in r.reasons)
+    rep = swap_test("c", cv, {"job_family_titles": ["engineer"]}, Dead(), {"pronouns": PRONOUN_SWAP}, today=date(2026, 11, 1), role="backend")
+    assert rep.inconclusive == ["pronouns"] and not rep.passed and rep.worst == 0.0

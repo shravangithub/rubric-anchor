@@ -73,19 +73,24 @@ class PolishReport:
     parameter_deltas: dict[str, float] = field(default_factory=dict)
     kept_base: int = 0
     kept_polished: int = 0
+    unanswered: int = 0
 
     @property
     def delta(self) -> float:
         return round(self.polished - self.base, 2)
 
     @property
+    def conclusive(self) -> bool:
+        return self.unanswered == 0
+
+    @property
     def passed(self) -> bool:
-        return not self.fact_leak and abs(self.delta) <= self.tolerance
+        return self.conclusive and not self.fact_leak and abs(self.delta) <= self.tolerance
 
     def as_dict(self) -> dict:
         return {"candidate_id": self.candidate_id, "tolerance": self.tolerance,
                 "base": self.base, "polished": self.polished, "delta": self.delta,
-                "fact_leak": self.fact_leak, "passed": self.passed,
+                "fact_leak": self.fact_leak, "passed": self.passed, "unanswered": self.unanswered,
                 "claims_kept": {"base": self.kept_base, "polished": self.kept_polished},
                 "moved_parameters": {k: v for k, v in self.parameter_deltas.items() if v}}
 
@@ -99,5 +104,5 @@ def polish_test(candidate_id: str, resume: str, job: dict, extractor, rewriter: 
                        fact_leak(resume, shiny),
                        {k: round(alt.scores.get(k, 0.0) - base.scores.get(k, 0.0), 2)
                         for k in set(base.scores) | set(alt.scores)},
-                       len(base.kept), len(alt.kept))
+                       len(base.kept), len(alt.kept), len(base.unanswered) + len(alt.unanswered))
     return rep
