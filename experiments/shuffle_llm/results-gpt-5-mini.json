@@ -1,0 +1,31 @@
+{
+  "experiment": "llm-shuffle-stability",
+  "date": "2026-11-01",
+  "design": "Same twelve CVs, same five orders and prompt as results.json; one fresh request per run.",
+  "model": "gpt-5-mini (temperature 1.0)",
+  "orders": {
+    "1": "A B C D E F G H I J K L",
+    "2": "G J D L A F K C H B E I",
+    "3": "L K I H G F E D C B A J",
+    "4": "C F A I L D G B K J E H",
+    "5": "H E B K J G C L F D A I"
+  },
+  "rankings": {
+    "1": "C A G B H J D I E F K L",
+    "2": "C A G B J D H I F E K L",
+    "3": "A C G B J H E I D F K L",
+    "4": "C A G J B H D F I K L E",
+    "5": "A C G J B E H D F K I L"
+  },
+  "raw": {
+    "1": "C A G B H J D I E F K L",
+    "2": "C A G B J D H I F E K L",
+    "3": "A C G B J H E I D F K L",
+    "4": "C A G J B H D F I K L E",
+    "5": "A C G J B E H D F K I L"
+  },
+  "caveats": [
+    "Five runs. A sixth could add a swing this one missed.",
+    "Synthetic CVs written to be close in strength; a wide-spread pool would look more stable."
+  ]
+}
