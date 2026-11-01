@@ -11,10 +11,10 @@ on:
         default: "claude-sonnet-5-5,claude-haiku-5-5"
       openai_models:
         description: "OpenAI models, comma-separated (blank to skip)"
-        default: ""
+        default: "gpt-5-mini"
       gemini_models:
         description: "Gemini models, comma-separated (blank to skip)"
-        default: "gemini-2.5-flash,gemini-2.5-pro"
+        default: ""
       runs:
         description: "Scoring repeats per CV for the stability check"
         default: "2"

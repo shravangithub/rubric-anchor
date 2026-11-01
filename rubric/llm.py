@@ -347,10 +347,29 @@ def openai_adapter(api_key: str, model: str = "gpt-4o-mini",
     from openai import OpenAI
     client = OpenAI(api_key=api_key, base_url=base_url)
 
+    # Newer OpenAI models (gpt-5 family, o-series) take max_completion_tokens
+    # and refuse any temperature but the default. Learn that from the first
+    # refusal rather than keeping a model list here.
+    kw = {"max_tokens": max_tokens, "temperature": temperature}
+
+    def _create():
+        for _ in range(3):
+            try:
+                return client.chat.completions.create(model=model, messages=[{"role": "user", "content": prompt_box[0]}], **kw)
+            except Exception as e:
+                msg = str(e)
+                if "max_tokens" in msg and "max_tokens" in kw:
+                    kw["max_completion_tokens"] = kw.pop("max_tokens")
+                elif "temperature" in msg and "temperature" in kw:
+                    kw.pop("temperature")
+                else:
+                    raise
+        return client.chat.completions.create(model=model, messages=[{"role": "user", "content": prompt_box[0]}], **kw)
+    prompt_box = [""]
+
     def complete(prompt: str) -> str:
-        r = _with_backoff(lambda: client.chat.completions.create(
-            model=model, max_tokens=max_tokens, temperature=temperature,
-            messages=[{"role": "user", "content": prompt}]))
+        prompt_box[0] = prompt
+        r = _with_backoff(_create)
         return r.choices[0].message.content or ""
     complete.model = model
     return complete

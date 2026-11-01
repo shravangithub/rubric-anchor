@@ -72,7 +72,8 @@ def main(argv=None):
         complete = gemini_adapter(os.environ["GEMINI_API_KEY"], model=args.model,
                                   max_tokens=4000, temperature=args.temperature)
     else:
-        complete = openai_adapter(os.environ["OPENAI_API_KEY"], model=args.model, max_tokens=200,
+        # reasoning models spend tokens before the answer; leave room
+        complete = openai_adapter(os.environ["OPENAI_API_KEY"], model=args.model, max_tokens=4000,
                                   temperature=args.temperature, base_url=os.environ.get("OPENAI_BASE_URL"))
     path = os.path.join(HERE, f"results-{args.model}.json")
     # resume: a run that died on a rate limit keeps what it got; rerun fills the gaps
