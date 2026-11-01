@@ -1,5 +1,31 @@
 # Changelog
 
+## Live evals, 1 November 2026
+
+First live reports, on gpt-5-mini (2 sample CVs, 2 repeats, paired proxy swaps):
+
+- **Shuffle**: same shape as Opus (top 3 and last held, 2 unsettled at a
+  shortlist of 5). Between models, candidate G went from 4th-11th on Opus to 3rd
+  in every run on gpt-5-mini (`experiments/shuffle_llm/WRITEUP.md`, "Across models").
+- **Stability**: composites moved 0.7-1.4 points between two scorings of the
+  same text. gpt-5-mini refuses temperature 0, so this floor is real.
+- **Proxy swaps**: all within 3.7 points of the base, no variant consistently
+  up or down across the two CVs; pronouns -2.3/-1.1, languages +2.4/+2.1,
+  hobbies +3.4 and -2.6 on the grad CV, +2.1/+1.0 on the senior, career break
+  +3.6/+2.5. Under the per-criterion noise of this model (single criteria swing
+  20-80 points between runs of identical text) none of that is attributable;
+  the eval now reports a noise floor and judges swaps against twice it.
+- **Polish**: +0.2 and +2.1; no invented facts.
+- **Injection**: 8 of 8 caught.
+- Found on the way: a truncated batched reply had been read as "no evidence"
+  for half the rubric (v0.3.1 fix: unanswered criteria are recorded, not zeroed).
+
+Reading: on a reasoning model that cannot be run deterministically, proxy
+effects smaller than ~4 points cannot be seen with two repeats; the honest
+number for "does a hobby line move the score" needs five or more repeats per
+side, which `--runs` and `--workers` now make affordable.
+
+
 ## v0.3.0 — 31 October 2026
 
 Three changes made in response to what was published in the last quarter.
