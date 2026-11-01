@@ -49,23 +49,45 @@ That is the practical finding: **instability doesn't spread evenly. It
 concentrates exactly at the cut line — which is the only place decisions
 actually get made.**
 
-## One model, one date
+## Across models
 
-The run above is claude-opus-5 on 19 August 2026. Order effects in LLM judges
-are documented across vendors (Shi et al., "Fragile Preferences", 2025;
-positional bias in comparative CV evaluation, PeerJ CS 2025), so this is not
-expected to be one vendor's quirk — but expectation is not measurement.
-`run_live.py` repeats the exact prompt and orders against any model you name
-and writes a results file `analyse.py` can read:
+The run above is claude-opus-5 on 19 August 2026. On 1 November 2026 the
+identical prompt and orders were run on gpt-5-mini (default reasoning,
+temperature 1.0) via `run_live.py`:
 
-```bash
-ANTHROPIC_API_KEY=... python experiments/shuffle_llm/run_live.py --provider anthropic --model claude-sonnet-5-5
-OPENAI_API_KEY=...    python experiments/shuffle_llm/run_live.py --provider openai --model gpt-5-mini
-python experiments/shuffle_llm/analyse.py --results experiments/shuffle_llm/results-claude-sonnet-5-5.json
-```
+| model | date | runs | moved 4+ places | biggest swing | unsettled at 3 | unsettled at 5 | top 3 held | last held |
+|---|---|---|---|---|---|---|---|---|
+| claude-opus-5 | 2026-08-19 | 5 | 2 of 12 | 7 places (G) | 0 | 3 | 3 of 3 | yes |
+| gpt-5-mini | 2026-11-01 | 5 | 1 of 12 | 4 places (E) | 0 | 2 | 3 of 3 | no |
 
-Results files for other models are welcome as pull requests; the write-up
-will carry a per-model table once there are three.
+Same shape on both: the extremes hold, the middle moves, and the movement sits
+at the shortlist cut (0 unsettled at a shortlist of 3, 2–3 at 5). gpt-5-mini
+moved less — it reasons before answering — but it still moved: E was 7th in
+two runs and 11th in another.
+
+The larger finding is between the models, not within them:
+
+| candidate | Opus, 5 runs | gpt-5-mini, 5 runs |
+|---|---|---|
+| A | 1, 1, 1, 1, 1 | 2, 2, 2, 1, 1 |
+| C | 2, 2, 2, 2, 2 | 1, 1, 1, 2, 2 |
+| **G** | **6, 8, 11, 4, 5** | **3, 3, 3, 3, 3** |
+| J | 3, 3, 3, 3, 3 | 4, 4, 4, 5, 4 |
+| L | 12, 12, 12, 12, 12 | 12, 12, 12, 11, 12 |
+
+G — the engineering lead with the bank-modernisation record — is the candidate
+Opus could not place (4th to 11th) and the candidate gpt-5-mini is sure about
+(3rd, five times out of five). One Gemini 2.5 Flash run, before that key's
+daily quota closed, also put G 3rd. Whether G is shortlisted at all is decided
+by which model the recruiter happened to be using. Nothing about G changed.
+
+That is the argument for scoring against a fixed rubric with evidence spans,
+in a form the shuffle alone could not make: a comparative ranker is unstable
+*within* a model and inconsistent *between* models, and both faults land on
+the same person — the one whose profile does not match the template.
+
+Results files for other models are welcome as pull requests
+(`run_live.py --provider ... --model ...`; `compare.py --md` builds the table).
 
 ## Four things this is not
 
