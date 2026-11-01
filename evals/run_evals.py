@@ -100,18 +100,26 @@ def main(argv=None):
 
     stab, cf, pol, inj = [], [], [], []
     for f in files:
-        cid, cv = os.path.splitext(os.path.basename(f))[0], open(f).read()
-        stab.append(score_repeated(cid, cv, JOB, ex, runs=args.runs,
-                                   tolerance=args.tolerance, **kw).as_dict())
-        cf.append(swap_test(cid, cv + "\nHe led the on-call rota.\n", JOB, ex,
-                            variants, tolerance=args.tolerance, **kw).as_dict())
-        pol.append(polish_test(cid, cv, JOB, ex, rw, tolerance=args.tolerance, **kw).as_dict())
-        for plant in PLANTS:
-            r = score_candidate(cid, cv + "\n" + plant + "\n", JOB, ex, **kw)
-            inj.append({"candidate_id": cid, "plant": plant[:40],
-                        "caught": bool(r.injection) and r.needs_human})
+        try:
+            cid, cv = os.path.splitext(os.path.basename(f))[0], open(f).read()
+            stab.append(score_repeated(cid, cv, JOB, ex, runs=args.runs,
+                                       tolerance=args.tolerance, **kw).as_dict())
+            cf.append(swap_test(cid, cv + "\nHe led the on-call rota.\n", JOB, ex,
+                                variants, tolerance=args.tolerance, **kw).as_dict())
+            pol.append(polish_test(cid, cv, JOB, ex, rw, tolerance=args.tolerance, **kw).as_dict())
+            for plant in PLANTS:
+                r = score_candidate(cid, cv + "\n" + plant + "\n", JOB, ex, **kw)
+                inj.append({"candidate_id": cid, "plant": plant[:40],
+                            "caught": bool(r.injection) and r.needs_human})
 
-    probe = score_candidate("probe", open(files[0]).read(), JOB, ex, **kw)
+        except Exception as e:
+            print(f"stopped at {f}: {type(e).__name__}: {str(e)[:120]}", file=sys.stderr); break
+
+    if not stab:
+        sys.exit("no CV completed; see the error above")
+    probe = score_candidate("probe", open(files[0]).read(), JOB, NullExtractor(), **kw)
+    probe.provenance.update({"extractor": type(ex).__name__, "model": getattr(ex, "model_id", None),
+                             "prompt_version": getattr(ex, "prompt_version", None)})
     report = {
         "provenance": {**probe.provenance, "package": __version__},
         "settings": {"runs": args.runs, "tolerance": args.tolerance, "batch": args.batch,

@@ -295,6 +295,25 @@ class LLMExtractor:
 # Adapters. Thin by design -- the package must not depend on any SDK.
 # ---------------------------------------------------------------------------
 
+def _with_backoff(call, tries: int = 6, base: float = 5.0):
+    """Retry a provider call on rate limits and transient errors: 5, 10, 20, 40, 60, 60 s.
+    A free-tier key is mostly rate limit; this is what turns 429 into 'slow'."""
+    import time as _t
+    last = None
+    for i in range(tries):
+        try:
+            return call()
+        except Exception as e:                      # SDK-specific classes; keep the package SDK-free
+            name = type(e).__name__
+            status = getattr(e, "status_code", None)
+            if "RateLimit" in name or status in (429, 500, 502, 503, 504, 529) or "Overloaded" in name:
+                last = e
+                _t.sleep(min(60.0, base * (2 ** i)))
+                continue
+            raise
+    raise last
+
+
 def anthropic_adapter(api_key: str, model: str = "claude-sonnet-5-5",
                       max_tokens: int = 1024, temperature: float = 0.0) -> Complete:
     """Requires `pip install anthropic`. Imported lazily, never at package load."""
@@ -302,9 +321,9 @@ def anthropic_adapter(api_key: str, model: str = "claude-sonnet-5-5",
     client = anthropic.Anthropic(api_key=api_key)
 
     def complete(prompt: str) -> str:
-        r = client.messages.create(model=model, max_tokens=max_tokens,
-                                   temperature=temperature,
-                                   messages=[{"role": "user", "content": prompt}])
+        r = _with_backoff(lambda: client.messages.create(
+            model=model, max_tokens=max_tokens, temperature=temperature,
+            messages=[{"role": "user", "content": prompt}]))
         return "".join(b.text for b in r.content if getattr(b, "type", "") == "text")
     complete.model = model
     return complete
@@ -329,9 +348,9 @@ def openai_adapter(api_key: str, model: str = "gpt-4o-mini",
     client = OpenAI(api_key=api_key, base_url=base_url)
 
     def complete(prompt: str) -> str:
-        r = client.chat.completions.create(
+        r = _with_backoff(lambda: client.chat.completions.create(
             model=model, max_tokens=max_tokens, temperature=temperature,
-            messages=[{"role": "user", "content": prompt}])
+            messages=[{"role": "user", "content": prompt}]))
         return r.choices[0].message.content or ""
     complete.model = model
     return complete
