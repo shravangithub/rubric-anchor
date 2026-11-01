@@ -46,7 +46,7 @@ jobs:
             for m in $(echo "$models" | tr ',' ' '); do
               echo "== $provider / $m"
               # the shuffle first: five requests, and the headline
-              python experiments/shuffle_llm/run_live.py --provider $provider --model $m || echo "shuffle FAILED for $m"
+              python experiments/shuffle_llm/run_live.py --provider $provider --model $m || echo "shuffle incomplete for $m (partial results kept)"
               [ -f experiments/shuffle_llm/results-$m.json ] && python experiments/shuffle_llm/analyse.py --results experiments/shuffle_llm/results-$m.json | tee live/shuffle-$m.txt
               python evals/run_evals.py --cvs examples/sample_cvs --provider $provider --model $m \
                 --runs ${{ github.event.inputs.runs }} --sample ${{ github.event.inputs.sample }} --variants pairs \
