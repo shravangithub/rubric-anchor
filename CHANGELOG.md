@@ -1,5 +1,20 @@
 # Changelog
 
+## Site — 4 November 2026
+
+- The site is back online (it went down while the repository was private).
+- "What's new" now covers 0.3 and 0.3.1: proxy redaction, proxy swaps, the
+  polish test, the noise floor, unanswered criteria, and the first live report
+  on gpt-5-mini. The 0.2 cards stay below it, labelled as 0.2.
+- Test count 111 -> 121 (overview, footer, README); the footer shows the
+  version and links the changelog.
+- "27 of the 66 always-on parameters never touch a model", matching the stats
+  row (it said 22, the core-only count).
+- Role names read FDE, DevOps, SRE, QA, SDR, GTM / Engineering / Executive
+  Leadership on the overview and roles pages.
+- The top menu drops its secondary links below 1,340px wide, so GitHub is no
+  longer cut off on laptop screens.
+
 ## Live evals, 1 November 2026
 
 First live reports, on gpt-5-mini (2 sample CVs, 2 repeats, paired proxy swaps):
